@@ -8,7 +8,7 @@ gem "jsbundling-rails"
 gem "turbo-rails"
 gem "stimulus-rails"
 gem "cssbundling-rails"
-gem "jbuilder"
+# gem "jbuilder" # API形式ではレスポンス返さないので不要
 # gem "bcrypt", "~> 3.1.7"
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 gem "solid_cache"
