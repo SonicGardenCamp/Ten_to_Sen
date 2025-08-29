@@ -5,7 +5,7 @@ class ShiritoriLogic
   end
 
   def validate(new_word)
-    last_word = @room.words.last&.content
+    last_word = @room.words.last&.body
 
     # 接続ルール
     if last_word && last_word[-1] != new_word[0]
@@ -18,7 +18,7 @@ class ShiritoriLogic
     end
 
     # 重複ルール
-    if @room.words.exists?(content: new_word)
+    if @room.words.exists?(body: new_word)
       return { status: :error, message: 'この単語は既に使用されています。' }
     end
 

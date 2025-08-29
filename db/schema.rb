@@ -14,7 +14,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_29_022709) do
   create_table "rooms", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "title", null: false
   end
 
   create_table "words", force: :cascade do |t|
