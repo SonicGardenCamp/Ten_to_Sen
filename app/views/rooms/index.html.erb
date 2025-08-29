@@ -1,16 +1,4 @@
-<p style="color: green"><%= notice %></p>
-
-<% content_for :title, "Rooms" %>
-
-<h1>Rooms</h1>
-
-<div id="rooms">
-  <% @rooms.each do |room| %>
-    <%= render room %>
-    <p>
-      <%= link_to "Show this room", room %>
-    </p>
-  <% end %>
+<div class="container text-center mt-5">
+  <h1 class="mb-4">高速しりとり</h1>
+  <%= button_to "ゲーム開始", rooms_path, method: :post, class: "btn btn-primary btn-lg" %>
 </div>
-
-<%= link_to "New room", new_room_path %>

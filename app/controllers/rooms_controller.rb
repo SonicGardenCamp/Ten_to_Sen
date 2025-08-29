@@ -16,12 +16,13 @@ class RoomsController < ApplicationController
   end
 
   def create
-    @room = Room.new(room_params)
+    @room = Room.new
+    @room.words.build(body: 'しりとり')
 
     if @room.save
-      redirect_to @room, notice: "Room was successfully created."
+      redirect_to @room, notice: "ゲーム開始！"
     else
-      render :new, status: :unprocessable_entity
+      render :index, status: :unprocessable_entity
     end
   end
 
