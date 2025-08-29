@@ -4,12 +4,12 @@
   <div class="card text-center mb-4">
     <div class="card-body">
       <h2 class="card-title">残り時間</h2>
-      <p class="display-4 fw-bold text-danger" data-shiritori-target="timer">30</p>
+      <p class="display-4" data-shiritori-target="timer">30</p>
     </div>
   </div>
 
-  <div class="card mb-4 text-start">
-    <div class="card-header fw-bold">単語履歴</div>
+  <div class="card mb-4">
+    <div class="card-header">単語履歴</div>
     <div class="card-body" id="word-history" style="height: 200px; overflow-y: scroll;">
       <% @room.words.order(:created_at).each do |word| %>
         <p class="mb-1 fs-5"><%= word.body %></p>
@@ -21,7 +21,7 @@
     ゲームオーバー！
   </div>
 
-  <%= form_with(model: Word.new, url: words_path, html: { "data-shiritori-target" => "form" }) do |form| %>
+  <%= form_with(model: Word.new, url: words_path, html: { "data-shiritori-target" => "form", "data-action": "turbo:submit-end->shiritori#resetTimerOnSubmit" }) do |form| %>
     <%= form.hidden_field :room_id, value: @room.id %>
     <div class="input-group">
       <%= form.text_field :body, class: 'form-control form-control-lg', placeholder: 'ローマ字で入力...', "data-shiritori-target" => "input", autocomplete: "off" %>

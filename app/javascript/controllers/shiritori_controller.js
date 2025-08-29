@@ -13,6 +13,11 @@ export default class extends Controller {
   }
 
   startTimer() {
+    // 既存のタイマーが動いていれば停止する
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval)
+    }
+
     this.timerInterval = setInterval(() => {
       this.timeLeft--
       this.timerTarget.textContent = this.timeLeft
@@ -28,5 +33,16 @@ export default class extends Controller {
     this.timerTarget.textContent = "0"
     this.inputTarget.disabled = true
     document.getElementById("game-over-message").classList.remove("d-none")
+  }
+
+
+  resetTimerOnSubmit(event) {
+    // フォーム送信が成功した場合のみタイマーをリセット
+    if (event.detail.success) {
+      this.timeLeft = 30
+      this.timerTarget.textContent = this.timeLeft
+      this.inputTarget.value = "" // 入力欄をクリア
+      this.startTimer() // タイマーを再スタート
+    }
   }
 }
