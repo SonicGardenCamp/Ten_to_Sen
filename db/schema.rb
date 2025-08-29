@@ -8,11 +8,22 @@
 # migrations from scratch. Old migrations may fail to apply correctly if those
 # migrations use external dependencies or application code.
 #
+# It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_28_075411) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_29_022709) do
   create_table "rooms", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "title", null: false
   end
+
+  create_table "words", force: :cascade do |t|
+    t.string "body"
+    t.integer "room_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["room_id"], name: "index_words_on_room_id"
+  end
+
+  add_foreign_key "words", "rooms"
 end
