@@ -12,6 +12,8 @@
   <% end %>
 
   <div>
-    <%= form.submit %>
+    <%= form.label :title %>
+    <%= form.text_field :title %>
+    <%= form.submit class: 'btn btn-primary' %>
   </div>
 <% end %>
