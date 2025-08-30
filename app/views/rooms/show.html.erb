@@ -12,7 +12,7 @@
     <div class="card-header fw-bold">単語履歴</div>
     <div class="card-body" id="word-history" style="height: 200px; overflow-y: scroll;">
       <% @room.words.order(:created_at).each do |word| %>
-        <p class="mb-1 fs-5"><%= word.content %></p>
+        <p class="mb-1 fs-5"><%= word.body %></p>
       <% end %>
     </div>
   </div>
@@ -24,7 +24,7 @@
   <%= form_with(model: Word.new, url: words_path, html: { "data-shiritori-target" => "form" }) do |form| %>
     <%= form.hidden_field :room_id, value: @room.id %>
     <div class="input-group">
-      <%= form.text_field :content, class: 'form-control form-control-lg', placeholder: 'ローマ字で入力...', "data-shiritori-target" => "input", autocomplete: "off" %>
+      <%= form.text_field :body, class: 'form-control form-control-lg', placeholder: 'ローマ字で入力...', "data-shiritori-target" => "input", autocomplete: "off" %>
       <%= form.submit "送信", class: 'btn btn-primary' %>
     </div>
   <% end %>
