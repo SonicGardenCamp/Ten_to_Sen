@@ -4,5 +4,8 @@
 
 import { application } from "./application"
 
+import RemovalsController from "./removals_controller"
+application.register("removals", RemovalsController)
+
 import ShiritoriController from "./shiritori_controller"
 application.register("shiritori", ShiritoriController)
