@@ -10,10 +10,14 @@ export default class extends Controller {
     this.timeLeft = 30
     wanakana.bind(this.inputTarget)
     this.startTimer()
-    this.inputTarget.focus()
+    if (this.hasInputTarget) {
+      this.inputTarget.focus()
+    }
   }
 
+  // ↓↓↓↓↓↓ このメソッドを追加してください ↓↓↓↓↓↓
   disconnect() {
+    // このコントローラがページから削除される時にタイマーを停止する
     clearInterval(this.timerInterval)
   }
 
@@ -21,6 +25,7 @@ export default class extends Controller {
     this.timerInterval = setInterval(() => {
       this.timeLeft--
       this.timerTarget.textContent = this.timeLeft
+
       if (this.timeLeft <= 0) {
         this.endGame()
       }
@@ -29,7 +34,19 @@ export default class extends Controller {
 
   endGame() {
     clearInterval(this.timerInterval)
-    this.inputTarget.disabled = true
+    this.timerTarget.textContent = "0"
+    if (this.hasInputTarget) {
+      this.inputTarget.disabled = true
+    }
     Turbo.visit(`/rooms/${this.roomIdValue}/result`)
+  }
+
+  checkWord() {
+    const word = this.inputTarget.value
+    if (word.endsWith('ん')) {
+      this.formTarget.dataset.turbo = "false"
+    } else {
+      this.formTarget.dataset.turbo = "true"
+    }
   }
 }
