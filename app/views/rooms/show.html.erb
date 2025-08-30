@@ -1,15 +1,31 @@
 <div class="container py-5" data-controller="shiritori" data-shiritori-room-id-value="<%= @room.id %>">
   <h1 class="text-center mb-4">高速しりとり</h1>
+
   <div class="card text-center mb-4">
     <div class="card-body">
       <h2 class="card-title">残り時間</h2>
       <p class="display-4 fw-bold text-danger" data-shiritori-target="timer">30</p>
     </div>
   </div>
+
   <div class="card mb-4 text-start">
     <div class="card-header fw-bold">単語履歴</div>
     <div class="card-body" id="word-history" style="height: 200px; overflow-y: scroll;">
+      <% @room.words.order(:created_at).each do |word| %>
+        <p class="mb-1 fs-5"><%= word.body %></p>
+      <% end %>
     </div>
   </div>
+
+  <div id="game-over-message" class="alert alert-info text-center fs-4 d-none">
+    ゲーム終了！
+  </div>
+
+  <%# ↓↓↓↓↓↓ この3行を追加してください ↓↓↓↓↓↓ %>
+  <div id="flash-messages">
+    <%# ここに警告メッセージが表示されます %>
+  </div>
+
   <%= render "rooms/word_form", room: @room %>
+
 </div>
