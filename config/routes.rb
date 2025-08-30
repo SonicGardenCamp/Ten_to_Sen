@@ -1,7 +1,6 @@
 Rails.application.routes.draw do
-  get "words/create"
-    root "rooms#index"
+  root "rooms#index"
 
-    resources :rooms, only: %i[index new create show edit update destroy]
-    resources :words, only: [:create]
-  end
+  resources :rooms, only: %i[index create show]
+  resources :words, only: [:create]
+end
