@@ -1,5 +1,5 @@
 class RoomsController < ApplicationController
-  before_action :set_room, only: %i[ show ]
+  before_action :set_room, only: %i[ show result ]
 
   def index
   end
@@ -14,6 +14,10 @@ class RoomsController < ApplicationController
     else
       redirect_to root_path, alert: "ゲームの開始に失敗しました。"
     end
+  end
+
+  def result
+    @room = Room.find(params[:id])
   end
 
   private
