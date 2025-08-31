@@ -11,7 +11,8 @@
   <div class="card mb-4 text-start">
     <div class="card-header fw-bold">単語履歴</div>
     <div class="card-body" id="word-history" style="height: 200px; overflow-y: scroll;">
-      <% @room.words.order(:created_at).each do |word| %>
+      <%# 【修正点】@words を直接使う %>
+      <% @words.each do |word| %>
         <p class="mb-1 fs-5"><%= word.body %></p>
       <% end %>
     </div>

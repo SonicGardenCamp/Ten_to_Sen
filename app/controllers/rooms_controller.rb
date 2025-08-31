@@ -7,7 +7,7 @@ class RoomsController < ApplicationController
   end
 
   def show
-    # 既存のコードのままでOK
+    @words = @room.words.order(:created_at)
   end
 
   def create
@@ -22,8 +22,7 @@ class RoomsController < ApplicationController
   end
 
   def result
-    # この行を追加して、ビューで@roomが確実に使えるようにします
-    @room = Room.find(params[:id])
+    @words = @room.words.order(:created_at)
   end
 
   private
