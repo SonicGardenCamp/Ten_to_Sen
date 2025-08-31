@@ -41,12 +41,4 @@ export default class extends Controller {
     Turbo.visit(`/rooms/${this.roomIdValue}/result`)
   }
 
-  checkWord() {
-    const word = this.inputTarget.value
-    if (word.endsWith('ん')) {
-      this.formTarget.dataset.turbo = "false"
-    } else {
-      this.formTarget.dataset.turbo = "true"
-    }
-  }
 }
