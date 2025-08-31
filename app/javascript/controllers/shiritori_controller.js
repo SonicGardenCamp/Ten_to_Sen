@@ -13,12 +13,20 @@ export default class extends Controller {
     if (this.hasInputTarget) {
       this.inputTarget.focus()
     }
+
+    this.boundHandleGameOver = this.handleGameOver.bind(this)
+    document.addEventListener('game:over', this.boundHandleGameOver)
   }
 
-  // ↓↓↓↓↓↓ このメソッドを追加してください ↓↓↓↓↓↓
   disconnect() {
-    // このコントローラがページから削除される時にタイマーを停止する
     clearInterval(this.timerInterval)
+    document.removeEventListener('game:over', this.boundHandleGameOver)
+  }
+
+  handleGameOver(event) {
+    setTimeout(() => {
+      Turbo.visit(event.detail.redirectUrl)
+    }, 1500)
   }
 
   startTimer() {
@@ -39,14 +47,5 @@ export default class extends Controller {
       this.inputTarget.disabled = true
     }
     Turbo.visit(`/rooms/${this.roomIdValue}/result`)
-  }
-
-  checkWord() {
-    const word = this.inputTarget.value
-    if (word.endsWith('ん')) {
-      this.formTarget.dataset.turbo = "false"
-    } else {
-      this.formTarget.dataset.turbo = "true"
-    }
   }
 }

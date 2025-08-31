@@ -1,33 +1,33 @@
 class RoomsController < ApplicationController
-  # `result`アクションを追加
+  # `show`と`result`アクションの前にset_roomとset_wordsを実行する
   before_action :set_room, only: %i[ show result ]
+  before_action :set_words, only: %i[ show result ]
 
   def index
-    # 既存のコードのままでOK
   end
 
   def show
-    # 既存のコードのままでOK
   end
 
   def create
     @room = Room.new
 
     if @room.save
-      redirect_to @room # noticeは不要なので削除
+      redirect_to @room
     else
-      # エラーの場合はトップページに戻すなど
       redirect_to root_path, alert: "ゲームの開始に失敗しました。"
     end
   end
 
   def result
-    # この行を追加して、ビューで@roomが確実に使えるようにします
-    @room = Room.find(params[:id])
   end
 
   private
     def set_room
       @room = Room.find(params[:id])
+    end
+
+    def set_words
+      @words = @room.words.order(:created_at)
     end
 end
