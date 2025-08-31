@@ -1,4 +1,4 @@
-<div class="container py-5" data-controller="shiritori">
+<div class="container py-5" data-controller="shiritori" data-shiritori-room-id-value="<%= @room.id %>">
   <h1 class="text-center mb-4">高速しりとり</h1>
 
   <div class="card text-center mb-4">
@@ -17,15 +17,15 @@
     </div>
   </div>
 
-  <div id="game-over-message" class="alert alert-danger text-center fs-4 d-none">
-    ゲームオーバー！
+  <div id="game-over-message" class="alert alert-info text-center fs-4 d-none">
+    ゲーム終了！
   </div>
 
-  <%= form_with(model: Word.new, url: words_path, html: { "data-shiritori-target" => "form" }) do |form| %>
-    <%= form.hidden_field :room_id, value: @room.id %>
-    <div class="input-group">
-      <%= form.text_field :body, class: 'form-control form-control-lg', placeholder: 'ローマ字で入力...', "data-shiritori-target" => "input", autocomplete: "off" %>
-      <%= form.submit "送信", class: 'btn btn-primary' %>
-    </div>
-  <% end %>
+  <%# ↓↓↓↓↓↓ この3行を追加してください ↓↓↓↓↓↓ %>
+  <div id="flash-messages">
+    <%# ここに警告メッセージが表示されます %>
+  </div>
+
+  <%= render "rooms/word_form", room: @room %>
+
 </div>

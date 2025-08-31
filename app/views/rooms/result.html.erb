@@ -1,0 +1,16 @@
+<div class="container py-5 text-center">
+  <h1 class="mb-4">ゲーム結果</h1>
+  <div class="card mx-auto" style="max-width: 400px;">
+    <div class="card-header fw-bold">
+      単語履歴 (<%= @room.words.count %>個)
+    </div>
+    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+      <% @room.words.order(:created_at).each do |word| %>
+        <p class="fs-5 mb-2"><%= word.body %></p>
+      <% end %>
+    </div>
+  </div>
+  <div class="mt-4">
+    <%= link_to "トップに戻る", root_path, class: "btn btn-primary" %>
+  </div>
+</div>
