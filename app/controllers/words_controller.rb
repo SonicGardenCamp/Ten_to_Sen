@@ -17,7 +17,11 @@ class WordsController < ApplicationController
       room.words.create!(body: new_word)
       render turbo_stream: [
         turbo_stream.update("flash-messages", partial: "layouts/flash", locals: { message: "ゲーム終了！", type: "danger" }),
-        turbo_stream.append_all("body", helpers.javascript_tag("setTimeout(() => { Turbo.visit('#{result_room_path(room)}') }, 1500)"))
+        turbo_stream.append_all("body", view_context.javascript_tag(<<-JS.squish))
+          document.dispatchEvent(new CustomEvent('game:over', {
+            detail: { redirectUrl: '#{result_room_path(room)}' }
+          }))
+        JS
       ]
 
     else

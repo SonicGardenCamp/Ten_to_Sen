@@ -1,6 +1,5 @@
 <%= turbo_frame_tag "word_form" do %>
   <%= form_with(model: Word.new, url: words_path, html: {
-        "data-shiritori-target" => "form",
         "data-shiritori-target" => "form"
       }) do |form| %>
     <%= form.hidden_field :room_id, value: room.id %>
