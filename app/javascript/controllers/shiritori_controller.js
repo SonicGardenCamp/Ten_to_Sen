@@ -8,7 +8,6 @@ export default class extends Controller {
 
   connect() {
     this.timeLeft = 30
-    wanakana.bind(this.inputTarget)
     this.startTimer()
     if (this.hasInputTarget) {
       this.inputTarget.focus()
@@ -21,6 +20,10 @@ export default class extends Controller {
   disconnect() {
     clearInterval(this.timerInterval)
     document.removeEventListener('game:over', this.boundHandleGameOver)
+  }
+
+  inputTargetConnected() {
+    wanakana.bind(this.inputTarget)
   }
 
   handleGameOver(event) {
