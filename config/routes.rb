@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  devise_for :models
   namespace :api do
     namespace :v1 do
       post 'guest_login', to: 'guests#create'
