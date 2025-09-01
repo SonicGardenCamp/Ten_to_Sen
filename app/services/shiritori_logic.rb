@@ -13,7 +13,7 @@ class ShiritoriLogic
     ShiritoriRules::LosingCharacterRule,
     ShiritoriRules::ConnectionRule,
     ShiritoriRules::DuplicationRule,
-    ShiritoriRules::WordLengthRule
+    ShiritoriRules::WordLengthRule,
   ].freeze
 
   def initialize(room)

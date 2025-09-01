@@ -9,15 +9,15 @@ class WordsController < ApplicationController
     when :success
       @word_record = room.words.create(body: new_word)
       render turbo_stream: [
-        turbo_stream.append("word-history", partial: "words/word", locals: { word_record: @word_record }),
-        turbo_stream.replace("word_form", partial: "rooms/word_form", locals: { room: room })
+        turbo_stream.append('word-history', partial: 'words/word', locals: { word_record: @word_record }),
+        turbo_stream.replace('word_form', partial: 'rooms/word_form', locals: { room: room }),
       ]
 
     when :game_over
       room.words.create!(body: new_word)
       render turbo_stream: [
-        turbo_stream.update("flash-messages", partial: "layouts/flash", locals: { message: "ゲーム終了！", type: "danger" }),
-        turbo_stream.append_all("body", view_context.javascript_tag(<<-JS.squish))
+        turbo_stream.update('flash-messages', partial: 'layouts/flash', locals: { message: 'ゲーム終了！', type: 'danger' }),
+        turbo_stream.append_all('body', view_context.javascript_tag(<<-JS.squish)),
           document.dispatchEvent(new CustomEvent('game:over', {
             detail: { redirectUrl: '#{result_room_path(room)}' }
           }))
@@ -26,8 +26,8 @@ class WordsController < ApplicationController
 
     else
       render turbo_stream: [
-        turbo_stream.update("flash-messages", partial: "layouts/flash", locals: { message: result[:message], type: "warning" }),
-        turbo_stream.replace("word_form", partial: "rooms/word_form", locals: { room: room })
+        turbo_stream.update('flash-messages', partial: 'layouts/flash', locals: { message: result[:message], type: 'warning' }),
+        turbo_stream.replace('word_form', partial: 'rooms/word_form', locals: { room: room }),
       ], status: :unprocessable_entity
     end
   end

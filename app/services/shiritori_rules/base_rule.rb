@@ -10,7 +10,7 @@ module ShiritoriRules
     end
 
     def validate
-      raise NotImplementedError, "各ルールクラスで実装してください"
+      raise NotImplementedError, '各ルールクラスで実装してください'
     end
 
     private
