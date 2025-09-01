@@ -87,7 +87,11 @@ module ShiritoriRules
 
     def get_last_char_for_shiritori(word)
       char = word[-1]
-      return convert_to_vowel(word[-2]) if char == 'ー'
+
+      if char == 'ー'
+        prev_char = word[-2].tr('ぁぃぅぇぉ', 'あいうえお')
+        return convert_to_vowel(prev_char)
+      end
 
       char.tr('ぁぃぅぇぉっゃゅょゎ', 'あいうえおつやゆよわ')
     end
