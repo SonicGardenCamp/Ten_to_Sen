@@ -22,7 +22,6 @@ export default class extends Controller {
     document.removeEventListener('game:over', this.boundHandleGameOver)
   }
 
-  
   inputTargetConnected() {
     wanakana.bind(this.inputTarget)
   }
