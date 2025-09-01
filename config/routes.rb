@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
-  root "rooms#index"
+  root 'rooms#index'
 
-  resources :rooms, only: %i[index create show] do
+  resources :rooms, only: %i[index show create] do
     get :result, on: :member # この行を追加
   end
   resources :words, only: [:create]
