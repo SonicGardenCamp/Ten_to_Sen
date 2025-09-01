@@ -5,6 +5,7 @@ require_relative 'shiritori_rules/losing_character_rule'
 require_relative 'shiritori_rules/connection_rule'
 require_relative 'shiritori_rules/duplication_rule'
 require_relative 'shiritori_rules/word_length_rule'
+require_relative 'initial_word_service' # この行を追加
 
 class ShiritoriLogic
   # 適用するルールを定義
