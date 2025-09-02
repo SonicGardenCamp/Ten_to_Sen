@@ -7,14 +7,18 @@ class WordsController < ApplicationController
 
     case result[:status]
     when :success
-      @word_record = room.words.create(body: new_word)
+      score = 100 + (new_word.length * 10)
+      @word_record = room.words.create(body: new_word, score: score)
+
       render turbo_stream: [
         turbo_stream.append('word-history', partial: 'words/word', locals: { word_record: @word_record }),
         turbo_stream.replace('word_form', partial: 'rooms/word_form', locals: { room: room }),
       ]
 
     when :game_over
-      room.words.create!(body: new_word)
+      score = 100 + (new_word.length * 10)
+      room.words.create!(body: new_word, score: score)
+
       render turbo_stream: [
         turbo_stream.update('flash-messages', partial: 'layouts/flash', locals: { message: 'ゲーム終了！', type: 'danger' }),
         turbo_stream.append_all('body', view_context.javascript_tag(<<-JS.squish)),
