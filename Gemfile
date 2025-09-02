@@ -25,6 +25,8 @@ gem 'thruster', require: false
 
 gem 'tzinfo-data', platforms: %i[windows jruby]
 
+gem "devise"
+
 group :development, :test do
   gem 'brakeman', require: false
   gem 'debug', platforms: %i[mri windows], require: 'debug/prelude'
