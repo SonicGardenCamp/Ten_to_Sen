@@ -1,9 +1,13 @@
 Rails.application.routes.draw do
   devise_for :users
 
-  devise_scope :user do
-    # 未ログイン時の root はログイン画面
-    root to: 'devise/sessions#new'
+  #認証済みか、認証済みでないかで2種類のrootのどちらかを出す
+  authenticated :user do  #認証済みのユーザー
+    root to: 'rooms#index', as: :authenticated_root
+  end
+
+  unauthenticated do  #認証済みでないユーザー
+    root to: 'devise/sessions#new', as: :unauthenticated_root
   end
 
   resources :rooms, only: %i[index show create new] do
