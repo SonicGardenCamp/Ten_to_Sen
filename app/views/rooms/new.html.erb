@@ -1,0 +1,29 @@
+<h1>新しいルームを作成</h1>
+
+<%= form_with model: @room, local: true do |form| %>
+  <p>
+    <%= form.label :name, "ルーム名" %><br>
+    <%= form.text_field :name %>
+  </p>
+
+  <p>
+    <%= form.label :game_mode, "ゲームモード" %><br>
+    
+    <%= form_with model: @room do |form| %>
+        <%= form.label :game_mode_score_attack do %>
+            <%= form.radio_button :game_mode, 'score_attack' %>
+            スコアアタック
+        <% end %>
+
+        <%= form.label :game_mode_battle_royale do %>
+            <%= form.radio_button :game_mode, 'battle_royale' %>
+            バトルロイヤル
+        <% end %>
+    <% end %>
+  </p>
+
+  <p>
+    <%= form.submit "作成する" %>
+  </p>
+<% end %>
+g

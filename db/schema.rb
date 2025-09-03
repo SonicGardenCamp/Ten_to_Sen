@@ -10,13 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_02_073541) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_02_055954) do
   create_table "rooms", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "status", default: 0, null: false
-    t.datetime "started_at"
-    t.index ["status"], name: "index_rooms_on_status"
+    t.string "name"
+    t.string "theme"
+    t.string "game_mode"
+    t.string "password_digest"
   end
 
   create_table "users", force: :cascade do |t|
