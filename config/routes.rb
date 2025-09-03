@@ -15,4 +15,7 @@ Rails.application.routes.draw do
     get :new    #ルームの新規作成画面
   end
   resources :words, only: [:create]
+
+  # デプロイ時に必須（消さないでね）
+  get "up" => 'rails/health#show'
 end
