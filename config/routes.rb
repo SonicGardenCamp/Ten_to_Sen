@@ -7,7 +7,9 @@ Rails.application.routes.draw do
   end
 
   unauthenticated do  #認証済みでないユーザー
-    root to: 'devise/sessions#new', as: :unauthenticated_root
+    devise_scope :user do
+      root to: 'devise/sessions#new', as: :unauthenticated_root
+    end
   end
 
   resources :rooms, only: %i[index show create new] do
