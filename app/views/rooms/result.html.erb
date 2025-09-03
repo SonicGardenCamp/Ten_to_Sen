@@ -6,22 +6,40 @@
       合計スコア
     </div>
     <div class="card-body">
-      <p class="display-4 fw-bold text-primary"><%= @total_score %>点</p>
+      <% total_ai_score = @words.sum { |word| word.ai_score || 0 } %>
+      <p class="display-4 fw-bold text-primary"><%= @total_score + total_ai_score %>点</p>
+      <p class="text-muted">(基礎点: <%= @total_score %> + AIボーナス: <%= total_ai_score %>)</p>
     </div>
   </div>
 
   <div class="card mx-auto" style="max-width: 400px;">
     <div class="card-header fw-bold">
-      単語履歴 (<%= @words.size %>個)
+      単語履歴 (<%= @words.count %>個)
     </div>
     <div class="card-body" style="max-height: 400px; overflow-y: auto;">
       <% @words.each do |word| %>
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <p class="fs-5 mb-0"><%= word.body %></p>
-          <% if word.score.to_i > 0 %>
-            <span class="badge bg-info rounded-pill"><%= word.score %>点</span>
-          <% end %>
-        </div>
+        <%= turbo_frame_tag "word_evaluation_#{word.id}" do %>
+          <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+            <p class="fs-5 mb-0 text-start"><%= word.body %></p>
+            <div class="text-end">
+              <% if word.score.to_i > 0 %>
+                <span class="badge bg-secondary rounded-pill">基礎: <%= word.score %>点</span>
+              <% end %>
+              <%# 【修正点】scoreが0の単語にはAI評価を表示しない %>
+              <% if word.score.to_i > 0 %>
+                <% if word.ai_score.present? %>
+                  <span class="badge bg-info rounded-pill">AI: <%= word.ai_score %>点</span>
+                <% else %>
+                  <span class="badge bg-light text-dark rounded-pill">
+                    <div class="spinner-border spinner-border-sm" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                  </span>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
       <% end %>
     </div>
   </div>
