@@ -1,3 +1,15 @@
-<div class="container text-center py-5">
-  <%= button_to "ゲーム開始", rooms_path, method: :post, class: 'game-btn' %>
+<div class="container py-5">
+  <!-- ヘッダー -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>高速しりとり</h1>
+    <div>
+      <span class="me-3">こんにちは、<%= current_user.username %> さん</span>
+      <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn btn-danger" %>
+    </div>
+  </div>
+
+  <!-- コンテンツ -->
+  <div class="text-center">
+    <%= button_to "ゲーム開始", rooms_path, method: :post, class: 'btn btn-primary btn-lg' %>
+  </div>
 </div>

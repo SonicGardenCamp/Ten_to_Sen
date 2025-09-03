@@ -18,7 +18,7 @@ class RoomsController < ApplicationController
 
     if @room.save
       initial_word = InitialWordService.generate
-      @room.words.create!(body: initial_word)
+      @room.words.create!(body: initial_word, score: 0)
       redirect_to @room
     else
       redirect_to root_path, alert: 'ゲームの開始に失敗しました。'
@@ -26,6 +26,7 @@ class RoomsController < ApplicationController
   end
 
   def result
+    @total_score = @words.sum(:score)
   end
 
   private
