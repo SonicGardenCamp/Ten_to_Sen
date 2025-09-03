@@ -6,13 +6,15 @@ Rails.application.routes.draw do
     root to: 'rooms#index', as: :authenticated_root
   end
 
-  unauthenticated do  #認証済みでないユーザー
-    root to: 'devise/sessions#new', as: :unauthenticated_root
+  devise_scope :user do
+    unauthenticated do  #認証済みでないユーザー
+      root to: 'devise/sessions#new', as: :unauthenticated_root
+    end
   end
 
   resources :rooms, only: %i[index show create new] do
-    get :result, on: :member # この行を追加
-    get :new    #ルームの新規作成画面
+    get :result, on: :member
+    get :new
   end
   resources :words, only: [:create]
 end
