@@ -10,7 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_02_073541) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_03_212106) do
+  create_table "room_participants", force: :cascade do |t|
+    t.integer "room_id", null: false
+    t.integer "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["room_id"], name: "index_room_participants_on_room_id"
+    t.index ["user_id"], name: "index_room_participants_on_user_id"
+  end
+
   create_table "rooms", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -20,6 +29,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_02_073541) do
     t.string "theme"
     t.string "game_mode"
     t.string "password_digest"
+    t.integer "max_players"
+    t.integer "creator_id"
     t.index ["status"], name: "index_rooms_on_status"
   end
 
@@ -45,5 +56,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_02_073541) do
     t.index ["room_id"], name: "index_words_on_room_id"
   end
 
+  add_foreign_key "room_participants", "rooms"
+  add_foreign_key "room_participants", "users"
   add_foreign_key "words", "rooms"
 end
