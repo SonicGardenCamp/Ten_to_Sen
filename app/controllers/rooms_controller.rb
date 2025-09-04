@@ -37,8 +37,6 @@ class RoomsController < ApplicationController
     end
 
 
-    # 3秒待機
-    sleep 3
     # 初期単語「しりとり」を追加
     @room.words.create!(
       body: 'しりとり',
@@ -89,8 +87,6 @@ class RoomsController < ApplicationController
       if room.full?
         room.update!(status: :playing) if room.respond_to?(:status)
 
-        # 3秒待機
-        sleep 3
         # 各参加者に「しりとり」の初期単語を生成
         room.room_participants.includes(:user).each do |participant|
           unless room.words.where(user: participant.user).exists?
