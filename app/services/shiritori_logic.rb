@@ -18,9 +18,9 @@ class ShiritoriLogic
     ShiritoriRules::WordLengthRule,
   ].freeze
 
-  def initialize(room, user = nil)
+  def initialize(room, room_participant)
     @room = room
-    @user = user  # 【修正】ユーザー情報を保持
+    @room_participant = room_participant
   end
 
   def validate(new_word)

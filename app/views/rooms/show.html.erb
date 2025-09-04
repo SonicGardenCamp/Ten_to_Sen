@@ -3,7 +3,14 @@
   <!-- プレイヤー情報を追加 -->
   <div class="card text-center mb-3">
     <div class="card-body">
-      <h3 class="card-title">プレイヤー: <%= current_user.username %></h3>
+      <h3 class="card-title">
+        プレイヤー: 
+        <% if guest_user? %>
+          <%= cookies.encrypted[:guest_name] %>
+        <% else %>
+          <%= current_user.username %>
+        <% end %>
+      </h3>
       <small class="text-muted">あなた専用のしりとり画面です</small>
     </div>
   </div>

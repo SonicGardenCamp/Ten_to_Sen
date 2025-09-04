@@ -3,14 +3,22 @@ class WordsController < ApplicationController
     room = Room.find(word_params[:room_id])
     new_word = word_params[:body]
 
-    # 【修正】現在のユーザーを渡してロジックを初期化
-    logic = ShiritoriLogic.new(room, current_user)
+    # 参加者情報を取得
+    room_participant = RoomParticipant.find(word_params[:room_participant_id])
+
+    # ロジックを初期化
+    logic = ShiritoriLogic.new(room, room_participant)
     result = logic.validate(new_word)
 
     case result[:status]
     when :success
       score = 100 + (new_word.length * 10)
-      @word_record = room.words.create(body: new_word, score: score, user: current_user)
+      @word_record = room.words.create(
+        body: new_word,
+        score: score,
+        room_participant: room_participant,
+        user: room_participant.user
+      )
 
       ShiritoriEvaluationJob.perform_later(@word_record)
 
@@ -21,9 +29,14 @@ class WordsController < ApplicationController
 
     when :game_over
       score = 100 + (new_word.length * 10)
-      room.words.create!(body: new_word, score: score, user: current_user)
+      room.words.create!(
+        body: new_word,
+        score: score,
+        room_participant: room_participant,
+        user: room_participant.user
+      )
 
-      ShiritoriEvaluationJob.perform_later(room.words.where(user: current_user).last)
+      ShiritoriEvaluationJob.perform_later(room.words.where(room_participant: room_participant).last)
 
       render turbo_stream: [
         turbo_stream.update('flash-messages', partial: 'layouts/flash', locals: { message: result[:message], type: 'danger' }),
@@ -45,6 +58,6 @@ class WordsController < ApplicationController
   private
 
   def word_params
-    params.require(:word).permit(:body, :room_id)
+    params.require(:word).permit(:body, :room_id, :room_participant_id)
   end
 end

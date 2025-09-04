@@ -2,6 +2,36 @@ class RoomsController < ApplicationController
   before_action :set_room, only: %i[show result status]
   before_action :set_words, only: %i[show result]
 
+  # ソロモードルーム作成
+  def solo
+    @room = Room.create!(
+      name: "ソロモード",
+      status: :playing,
+      max_players: 1,
+      creator_id: current_user&.id
+    )
+
+    # プレイヤー情報を作成（ログインユーザーまたはゲスト）
+    participant = if guest_user?
+      @room.room_participants.create!(
+        guest_id: current_guest_id,
+        guest_name: current_guest_name
+      )
+    else
+      @room.room_participants.create!(user: current_user)
+    end
+
+    # 初期単語「しりとり」を追加
+    @room.words.create!(
+      body: 'しりとり',
+      score: 0,
+      room_participant: participant,
+      user: participant.user
+    )
+
+    redirect_to room_path(@room), notice: 'ソロモードを開始しました'
+  end
+
   def new
     @room = Room.new
     @room.save
@@ -52,16 +82,18 @@ class RoomsController < ApplicationController
   def show
     @room = Room.find(params[:id])
 
-    unless @room.room_participants.exists?(user_id: current_user.id)
+    # 参加確認（ログインユーザーまたはゲストユーザー）
+    is_participant = if guest_user?
+      @room.room_participants.exists?(guest_id: current_guest_id)
+    else
+      @room.room_participants.exists?(user_id: current_user.id)
+    end
+
+    unless is_participant
       redirect_to rooms_path, alert: 'このルームの参加者ではありません。' and return
     end
 
     if @room.respond_to?(:playing?) && @room.playing?
-      # 【修正】現在のユーザーに「しりとり」の初期単語がなければ生成
-      unless @room.words.where(user: current_user).exists?
-        @room.words.create!(body: 'しりとり', score: 0, user: current_user)
-      end
-
       render :show
     else
       render :waiting
@@ -128,8 +160,15 @@ class RoomsController < ApplicationController
     end
 
     def set_words
-      # 【修正】現在のユーザーの単語のみを表示
-      @words = @room.words.where(user: current_user).order(:created_at) if @room && current_user
+      return unless @room
+
+      if guest_user?
+        participant = @room.room_participants.find_by(guest_id: current_guest_id)
+      else
+        participant = @room.room_participants.find_by(user_id: current_user.id)
+      end
+
+      @words = @room.words.where(room_participant_id: participant&.id).order(:created_at)
     end
 
     def room_params
