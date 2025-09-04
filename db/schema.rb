@@ -16,10 +16,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_04_064739) do
     t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-
     t.string "guest_id"
     t.string "guest_name"
-    t.index ["room_id", "user_id"], name: "index_room_participants_on_room_id_and_user_id", unique: true
     t.index ["room_id"], name: "index_room_participants_on_room_id"
     t.index ["user_id"], name: "index_room_participants_on_user_id"
   end
@@ -33,9 +31,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_04_064739) do
     t.string "theme"
     t.string "game_mode"
     t.string "password_digest"
-    t.integer "max_players", default: 2, null: false
-    t.integer "creator_id", null: false
-    t.index ["creator_id"], name: "index_rooms_on_creator_id"
+    t.integer "max_players"
+    t.integer "creator_id"
     t.index ["status"], name: "index_rooms_on_status"
   end
 
@@ -68,7 +65,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_04_064739) do
 
   add_foreign_key "room_participants", "rooms"
   add_foreign_key "room_participants", "users"
-  add_foreign_key "rooms", "users", column: "creator_id"
   add_foreign_key "words", "room_participants"
   add_foreign_key "words", "rooms"
   add_foreign_key "words", "users"
