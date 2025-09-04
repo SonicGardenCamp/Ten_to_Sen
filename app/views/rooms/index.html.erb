@@ -1,13 +1,25 @@
 <div class="container py-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div class="greeting">
-      こんにちは、<%= current_user.username %> さん
-      <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "game-btn" %>
+      <% if current_user %>
+        こんにちは、<%= current_user.username %> さん
+        <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "game-btn" %>
+      <% else %>
+        ゲストでアクセス中です
+        <%= link_to "ログイン", new_user_session_path, class: "game-btn" %>
+      <% end %>
     </div>
   </div>
 
   <div class="text-center mb-5">
-    <%= button_to "ルームを作成", rooms_path, method: :post, class: 'game-btn' %>
+    <div class="d-flex justify-content-center gap-3">
+      <% if current_user %>
+        <%= button_to "ルームを作成", rooms_path, method: :post, class: 'game-btn' %>
+      <% else %>
+        <%= link_to "ルーム作成はログインが必要です", new_user_session_path, class: 'btn btn-warning' %>
+      <% end %>
+      <%= link_to "ソロモードで遊ぶ", solo_rooms_path, class: 'btn btn-success btn-lg' %>
+    </div>
   </div>
 
   <h2 class="mb-3">参加可能なルーム</h2>

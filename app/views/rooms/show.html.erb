@@ -1,5 +1,20 @@
 <div class="container py-5" data-controller="shiritori" data-shiritori-room-id-value="<%= @room.id %>">
 
+  <!-- プレイヤー情報を追加 -->
+  <div class="card text-center mb-3">
+    <div class="card-body">
+      <h3 class="card-title">
+        プレイヤー: 
+        <% if guest_user? %>
+          <%= cookies.encrypted[:guest_name] %>
+        <% else %>
+          <%= current_user.username %>
+        <% end %>
+      </h3>
+      <small class="text-muted">あなた専用のしりとり画面です</small>
+    </div>
+  </div>
+
   <div class="card text-center mb-4">
     <div class="card-body">
       <h2 class="card-title">残り時間</h2>
@@ -8,9 +23,8 @@
   </div>
 
   <div class="card mb-4 text-start">
-    <div class="card-header fw-bold">単語履歴</div>
+    <div class="card-header fw-bold">あなたの単語履歴</div>
     <div class="card-body" id="word-history" style="height: 200px; overflow-y: scroll;">
-      <%# 【修正点】@words を直接使う %>
       <% @words.each do |word| %>
         <p class="mb-1 fs-5"><%= word.body %></p>
       <% end %>
@@ -21,7 +35,6 @@
     ゲーム終了！
   </div>
 
-  <%# ↓↓↓↓↓↓ この3行を追加してください ↓↓↓↓↓↓ %>
   <div id="flash-messages">
     <%# ここに警告メッセージが表示されます %>
   </div>
