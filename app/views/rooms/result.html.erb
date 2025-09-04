@@ -6,9 +6,9 @@
       合計スコア
     </div>
     <div class="card-body">
-      <% total_ai_score = @words.sum { |word| word.ai_score || 0 } %>
-      <p class="display-4 fw-bold text-primary"><%= @total_score + total_ai_score %>点</p>
-      <p class="text-muted">(基礎点: <%= @total_score %> + AIボーナス: <%= total_ai_score %>)</p>
+      <h1> <% total_ai_score = @words.sum { |word| word.ai_score || 0 } %> </h1>
+      <h1 class="red"><%= @total_score + total_ai_score %>点</h2>
+      <h2>(基礎点: <%= @total_score %> + AIボーナス: <%= total_ai_score %>)</h2>
     </div>
   </div>
 

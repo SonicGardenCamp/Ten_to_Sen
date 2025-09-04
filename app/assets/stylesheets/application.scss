@@ -11,7 +11,11 @@ p{
 
 label{
     color: cyan !important;
-    text-shadow: 0 0 5px cyan;
+    text-shadow: 0 0 5px red;
+}
+.red{
+    color:red !important;
+    text-shadow: 0 0 7px red;
 }
 body{
     background-image: url(images/bg.png);
