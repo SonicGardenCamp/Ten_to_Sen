@@ -129,7 +129,7 @@ class RoomsController < ApplicationController
 
     # 参加者とその結果データを正しく設定
     @participants = @room.room_participants.includes(:user)
-    @results = {}
+    results_data = {}
 
     # 参加者がいない場合の対策
     if @participants.empty?
@@ -141,7 +141,7 @@ class RoomsController < ApplicationController
       total_base_score = user_words.sum(:score)
       total_ai_score = user_words.sum { |word| word.ai_score || 0 }
 
-      @results[participant.user] = {
+      results_data[participant.user] = {
         words: user_words,
         total_base_score: total_base_score,
         total_ai_score: total_ai_score,
@@ -150,8 +150,19 @@ class RoomsController < ApplicationController
       }
     end
 
-    # 勝者を決定
-    @winner = @results.max_by { |user, result| result[:total_score] }&.first
+    # 【新規追加】総合スコア順にソートして順位付け
+    @ranked_results = results_data.sort_by { |user, result| -result[:total_score] }
+                                  .map.with_index(1) { |(user, result), rank|
+      {
+        rank: rank,
+        user: user,
+        result: result,
+        is_current_user: user == current_user
+      }
+    }
+
+    # 勝者を決定（1位のユーザー）
+    @winner = @ranked_results.first[:user] if @ranked_results.any?
   end
 
   private
