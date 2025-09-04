@@ -1,0 +1,29 @@
+<h1>ソロスコアランキング</h1>
+<table id="ranking-table">
+  <thead>
+    <tr>
+      <th>順位</th>
+      <th>ユーザー名</th>
+      <th>合計スコア</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- JavaScriptで描画 -->
+  </tbody>
+</table>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('/rooms/solo_ranking_json')
+    .then(response => response.json())
+    .then(data => {
+      const tbody = document.querySelector('#ranking-table tbody');
+      tbody.innerHTML = '';
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row.rank}</td><td>${row.username}</td><td>${row.total_score}</td>`;
+        tbody.appendChild(tr);
+      });
+    });
+});
+</script>
