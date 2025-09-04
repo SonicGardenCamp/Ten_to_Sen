@@ -3,9 +3,10 @@
 module ShiritoriRules
   class DuplicationRule < BaseRule
     def validate
-      return unless room.words.exists?(body: new_word)
+      # 【修正】現在のユーザー内での重複チェック
+      return unless user_words.exists?(body: new_word)
 
-      { status: :error, message: 'その単語は既に使用されています。' }
+      { status: :error, message: 'あなたは既にその単語を使用しています。' }
     end
   end
 end

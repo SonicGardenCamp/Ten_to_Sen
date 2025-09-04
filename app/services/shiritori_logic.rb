@@ -18,13 +18,15 @@ class ShiritoriLogic
     ShiritoriRules::WordLengthRule,
   ].freeze
 
-  def initialize(room)
+  def initialize(room, user = nil)
     @room = room
+    @user = user  # 【修正】ユーザー情報を保持
   end
 
   def validate(new_word)
     RULES.each do |rule_class|
-      result = rule_class.new(@room, new_word).validate
+      # 【修正】ユーザー情報もルールクラスに渡す
+      result = rule_class.new(@room, new_word, @user).validate
       return result if result.present?
     end
 
