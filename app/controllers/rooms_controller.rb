@@ -95,7 +95,9 @@ class RoomsController < ApplicationController
   # 結果表示（勝敗判定はあなたのスコア算出ロジックに合わせて実装）
   def result
     @room = Room.find(params[:id])
-    # 例）@scores = { user_id => score, ... } を用意して勝敗を決定する
+    @words = @room.words.order(:created_at) # `@words`はbefore_actionで設定済み
+    # `@total_score`を計算して設定
+    @total_score = @words.sum(:score)
   end
 
   private
