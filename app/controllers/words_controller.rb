@@ -38,11 +38,13 @@ class WordsController < ApplicationController
 
       ShiritoriEvaluationJob.perform_later(room.words.where(room_participant: room_participant).last)
 
+      # ★修正箇所：即座にリダイレクトせず、ゲームオーバー状態を設定するだけ
       render turbo_stream: [
         turbo_stream.update('flash-messages', partial: 'layouts/flash', locals: { message: result[:message], type: 'danger' }),
+        turbo_stream.append('word-history', partial: 'words/word', locals: { word: room.words.where(room_participant: room_participant).last }),
         turbo_stream.append_all('body', view_context.javascript_tag(<<-JS.squish)),
           document.dispatchEvent(new CustomEvent('game:over', {
-            detail: { redirectUrl: '#{result_room_path(room)}' }
+            detail: { message: '#{result[:message]}' }
           }))
         JS
       ]
