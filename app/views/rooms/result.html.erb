@@ -1,14 +1,16 @@
 <div class="container py-5 text-center">
   <h1 class="mb-4">ゲーム結果</h1>
 
-  <div class="row">
-    <% @results.each do |user, result| %>
-      <div class="col-md-6 mb-4">
-        <div class="card">
-          <div class="card-header fw-bold bg-<%= user == current_user ? 'primary text-white' : 'secondary text-white' %>">
-            <%= user.username %><%= user == current_user ? ' (あなた)' : '' %>
-          </div>
-
+  <div class="card mx-auto mb-4" style="max-width: 400px;">
+    <div class="card-header fw-bold">
+      合計スコア
+    </div>
+    <div class="card-body">
+      <h1> <% total_ai_score = @words.sum { |word| word.ai_score || 0 } %> </h1>
+      <h1 class="red"><%= @total_score + total_ai_score %>点</h2>
+      <h2>(基礎点: <%= @total_score %> + AIボーナス: <%= total_ai_score %>)</h2>
+    </div>
+  </div>
           <div class="card-body">
             <p class="display-4 fw-bold text-primary"><%= result[:total_score] %>点</p>
             <p class="text-muted">(基礎点: <%= result[:total_base_score] %> + AIボーナス: <%= result[:total_ai_score] %>)</p>
