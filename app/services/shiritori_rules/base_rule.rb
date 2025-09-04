@@ -20,11 +20,11 @@ module ShiritoriRules
     def last_word_record
       return @last_word_record if defined?(@last_word_record)
 
-      if @user
-        @last_word_record = room.words.where(user: @user).order(:created_at).last
+      user_obj = @user || (defined?(current_user) ? current_user : nil)
+      if user_obj
+        @last_word_record = room.words.where(user: user_obj).order(:created_at).last
       else
-        # フォールバック（既存の動作を保持）
-        @last_word_record = room.words.order(:created_at).last
+        raise "ユーザー情報がありません。履歴を取得できません。"
       end
     end
 
@@ -35,8 +35,12 @@ module ShiritoriRules
 
     # 現在のユーザーの単語履歴を取得
     def user_words
-      return room.words if @user.nil?
-      room.words.where(user: @user)
+      user_obj = @user || (defined?(current_user) ? current_user : nil)
+      if user_obj
+        room.words.where(user: user_obj)
+      else
+        raise "ユーザー情報がありません。履歴を取得できません。"
+      end
     end
   end
 end

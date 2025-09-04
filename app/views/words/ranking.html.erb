@@ -1,0 +1,21 @@
+<div class="container py-4">
+  <h2 class="mb-4">スコアランキング（TOP10）</h2>
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>順位</th>
+        <th>ユーザー名</th>
+        <th>合計スコア</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @ranking.each_with_index do |user, i| %>
+        <tr<%= ' class="table-primary"' if user.id == current_user&.id %>>
+          <td><%= i + 1 %></td>
+          <td><%= user.username %></td>
+          <td><%= user.total_score %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
