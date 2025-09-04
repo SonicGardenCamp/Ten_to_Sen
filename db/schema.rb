@@ -53,6 +53,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_03_212106) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "score"
+    t.integer "ai_score"
     t.index ["room_id"], name: "index_words_on_room_id"
   end
 
