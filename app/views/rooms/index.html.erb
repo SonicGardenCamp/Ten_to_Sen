@@ -1,14 +1,13 @@
 <div class="container py-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>高速しりとり</h1>
-    <div>
-      <span class="me-3">こんにちは、<%= current_user.username %> さん</span>
-      <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "btn btn-danger" %>
+    <div class="greeting">
+      こんにちは、<%= current_user.username %> さん
+      <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "game-btn" %>
     </div>
   </div>
 
   <div class="text-center mb-5">
-    <%= button_to "ルームを作成", rooms_path, method: :post, class: 'btn btn-primary btn-lg' %>
+    <%= button_to "ルームを作成", rooms_path, method: :post, class: 'game-btn' %>
   </div>
 
   <h2 class="mb-3">参加可能なルーム</h2>
@@ -20,7 +19,7 @@
             ルーム #<%= room.id %>（作成者: <%= room.creator.username %>）
             / 参加人数: <%= room.room_participants.count %> / <%= room.max_players %>
           </div>
-          <%= button_to "参加", join_room_path(room), method: :post, class: "btn btn-success", data: { turbo: false } %>
+          <%= button_to "参加", join_room_path(room), method: :post, class: "game-btn", data: { turbo: false } %>
         </li>
       <% end %>
     </ul>
