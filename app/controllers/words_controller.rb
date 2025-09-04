@@ -29,31 +29,64 @@ class WordsController < ApplicationController
 
     when :game_over
       score = 100 + (new_word.length * 10)
-      room.words.create!(
+      word_record = room.words.create!(
         body: new_word,
         score: score,
         room_participant: room_participant,
         user: room_participant.user
       )
 
-      ShiritoriEvaluationJob.perform_later(room.words.where(room_participant: room_participant).last)
+      ShiritoriEvaluationJob.perform_later(word_record)
 
-      # ★修正箇所：即座にリダイレクトせず、ゲームオーバー状態を設定するだけ
-      render turbo_stream: [
-        turbo_stream.update('flash-messages', partial: 'layouts/flash', locals: { message: result[:message], type: 'danger' }),
-        turbo_stream.append('word-history', partial: 'words/word', locals: { word: room.words.where(room_participant: room_participant).last }),
-        turbo_stream.append_all('body', view_context.javascript_tag(<<-JS.squish)),
-          document.dispatchEvent(new CustomEvent('game:over', {
-            detail: { message: '#{result[:message]}' }
-          }))
-        JS
-      ]
+      if room.game_mode == "score_attack"
+        # スコアアタック
+        render turbo_stream: [
+          turbo_stream.update('flash-messages',
+            partial: 'layouts/flash',
+            locals: { message: result[:message], type: 'danger' }
+          ),
+          turbo_stream.append_all('body', view_context.javascript_tag(<<-JS.squish))
+            setTimeout(function() {
+              window.location.href = '#{result_room_path(room)}';
+            }, 1000);
+          JS
+        ]
 
-    else
-      render turbo_stream: [
-        turbo_stream.update('flash-messages', partial: 'layouts/flash', locals: { message: result[:message], type: 'warning' }),
-        turbo_stream.replace('word_form', partial: 'rooms/word_form', locals: { room: room }),
-      ], status: :unprocessable_entity
+      else
+        # ★ 対戦モード
+        alive_participants = room.room_participants.any? do |p|
+          last_word = room.words.where(room_participant: p).last
+          last_word && !last_word.body.ends_with?("ん")
+        end
+
+        if alive_participants
+          # まだ続いてる人がいる → 待機
+          render turbo_stream: [
+            turbo_stream.update('flash-messages',
+              partial: 'layouts/flash',
+              locals: { message: result[:message], type: 'danger' }
+            ),
+            turbo_stream.append('word-history',
+              partial: 'words/word',
+              locals: { word: word_record }
+            ),
+            turbo_stream.append_all('body', view_context.javascript_tag(<<-JS.squish))
+              document.dispatchEvent(new CustomEvent('game:over', {
+                detail: { message: '#{result[:message]}' }
+              }))
+            JS
+          ]
+        else
+          # 対戦モード（全員「ん」で終了 → 即リザルト）
+          render turbo_stream: [
+            turbo_stream.append_all('body', view_context.javascript_tag(<<-JS.squish))
+              setTimeout(function() {
+                window.location.href = '#{result_room_path(room)}';
+              }, 1000);
+            JS
+          ]
+        end
+      end
     end
   end
 
