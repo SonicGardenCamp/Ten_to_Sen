@@ -1,48 +1,123 @@
 <div class="container py-5 text-center">
   <h1 class="mb-4">ゲーム結果</h1>
 
-  <div class="card mx-auto mb-4" style="max-width: 400px;">
-    <div class="card-header fw-bold">
-      合計スコア
+  <!-- 勝者発表 -->
+  <% if @winner %>
+    <div class="alert alert-success mb-4">
+      <h2>🏆 1位: <%= @winner.username %> 🏆</h2>
     </div>
-    <div class="card-body">
-      <h1> <% total_ai_score = @words.sum { |word| word.ai_score || 0 } %> </h1>
-      <h1 class="red"><%= @total_score + total_ai_score %>点</h2>
-      <h2>(基礎点: <%= @total_score %> + AIボーナス: <%= total_ai_score %>)</h2>
-    </div>
-  </div>
-          <div class="card-body">
-            <p class="display-4 fw-bold text-primary"><%= result[:total_score] %>点</p>
-            <p class="text-muted">(基礎点: <%= result[:total_base_score] %> + AIボーナス: <%= result[:total_ai_score] %>)</p>
-            <p class="fw-bold">単語数: <%= result[:word_count] %>個</p>
-          </div>
+  <% end %>
 
-          <div class="card-footer">
-            <div class="card-header fw-bold">単語履歴</div>
-            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
-              <% result[:words].each do |word| %>
-                <%= turbo_frame_tag "word_evaluation_#{word.id}" do %>
-                  <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-                    <p class="fs-6 mb-0 text-start"><%= word.body %></p>
-                    <div class="text-end">
-                      <% if word.score.to_i > 0 %>
-                        <span class="badge bg-secondary rounded-pill">基礎: <%= word.score %>点</span>
-                      <% end %>
-                      <% if word.score.to_i > 0 %>
-                        <% if word.ai_score.present? %>
-                          <span class="badge bg-info rounded-pill">AI: <%= word.ai_score %>点</span>
-                        <% else %>
-                          <span class="badge bg-light text-dark rounded-pill">
-                            <div class="spinner-border spinner-border-sm" role="status">
-                              <span class="visually-hidden">Loading...</span>
+  <!-- 順位表示 -->
+  <div class="ranking-container">
+    <% @ranked_results.each do |ranking_data| %>
+      <div class="row justify-content-center mb-4">
+        <div class="col-md-8">
+          <div class="card <%= 'border-warning shadow-lg' if ranking_data[:rank] == 1 %> <%= 'border-primary' if ranking_data[:is_current_user] %>">
+
+            <!-- 順位とユーザー名のヘッダー -->
+            <div class="card-header d-flex align-items-center justify-content-between
+                        <%= 'bg-warning text-dark fw-bold' if ranking_data[:rank] == 1 %>
+                        <%= 'bg-primary text-white' if ranking_data[:is_current_user] && ranking_data[:rank] != 1 %>
+                        <%= 'bg-secondary text-white' if !ranking_data[:is_current_user] && ranking_data[:rank] != 1 %>">
+
+              <div class="d-flex align-items-center">
+                <!-- 順位表示 -->
+                <span class="badge
+                           <%= 'bg-dark text-warning' if ranking_data[:rank] == 1 %>
+                           <%= 'bg-light text-primary' if ranking_data[:rank] != 1 %>
+                           fs-5 me-3">
+                  <%= ranking_data[:rank] %>位
+                </span>
+
+                <!-- ユーザー名 -->
+                <h4 class="mb-0">
+                  <%= ranking_data[:user].username %>
+                  <%= ' (あなた)' if ranking_data[:is_current_user] %>
+                </h4>
+              </div>
+
+              <!-- 1位の場合は王冠アイコン -->
+              <% if ranking_data[:rank] == 1 %>
+                <span class="fs-2">👑</span>
+              <% end %>
+            </div>
+
+            <!-- スコア表示 -->
+            <div class="card-body text-center">
+              <div class="row">
+                <div class="col-md-4">
+                  <h3 class="display-5 fw-bold
+                           <%= 'text-warning' if ranking_data[:rank] == 1 %>
+                           <%= 'text-primary' if ranking_data[:rank] != 1 %>">
+                    <%= ranking_data[:result][:total_score] %>
+                  </h3>
+                  <small class="text-muted">総合スコア</small>
+                </div>
+
+                <div class="col-md-4">
+                  <h5 class="text-secondary"><%= ranking_data[:result][:total_base_score] %></h5>
+                  <small class="text-muted">基礎点</small>
+                </div>
+
+                <div class="col-md-4">
+                  <h5 class="text-info"><%= ranking_data[:result][:total_ai_score] %></h5>
+                  <small class="text-muted">AIボーナス</small>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <span class="badge bg-light text-dark fs-6">
+                  使用単語数: <%= ranking_data[:result][:word_count] %>個
+                </span>
+              </div>
+            </div>
+
+            <!-- 単語履歴（アコーディオン） -->
+            <div class="card-footer">
+              <div class="accordion" id="wordsAccordion<%= ranking_data[:rank] %>">
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapse<%= ranking_data[:rank] %>"
+                            aria-expanded="false">
+                      <i class="bi bi-list-ul me-2"></i>
+                      単語履歴を見る
+                    </button>
+                  </h2>
+                  <div id="collapse<%= ranking_data[:rank] %>"
+                       class="accordion-collapse collapse"
+                       data-bs-parent="#wordsAccordion<%= ranking_data[:rank] %>">
+                    <div class="accordion-body" style="max-height: 300px; overflow-y: auto;">
+                      <% ranking_data[:result][:words].each do |word| %>
+                        <%= turbo_frame_tag "word_evaluation_#{word.id}" do %>
+                          <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+                            <p class="fs-6 mb-0 text-start fw-medium"><%= word.body %></p>
+                            <div class="text-end">
+                              <% if word.score.to_i > 0 %>
+                                <span class="badge bg-secondary rounded-pill">基礎: <%= word.score %>点</span>
+                                <% if word.ai_score.present? %>
+                                  <span class="badge bg-info rounded-pill">AI: <%= word.ai_score %>点</span>
+                                <% else %>
+                                  <span class="badge bg-light text-dark rounded-pill">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                      <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                  </span>
+                                <% end %>
+                              <% else %>
+                                <span class="badge bg-light text-muted rounded-pill">開始単語</span>
+                              <% end %>
                             </div>
-                          </span>
+                          </div>
                         <% end %>
                       <% end %>
                     </div>
                   </div>
-                <% end %>
-              <% end %>
+                </div>
+              </div>
             </div>
           </div>
         </div>
