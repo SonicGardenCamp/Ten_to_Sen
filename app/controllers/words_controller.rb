@@ -87,6 +87,15 @@ class WordsController < ApplicationController
           ]
         end
       end
+    else
+      # ❗️このブロックを戻さないと警告表示されない
+      render turbo_stream: [
+        turbo_stream.update('flash-messages',
+          partial: 'layouts/flash',
+          locals: { message: result[:message], type: 'warning' }
+        ),
+        turbo_stream.replace('word_form', partial: 'rooms/word_form', locals: { room: room }),
+      ], status: :unprocessable_entity
     end
   end
 
