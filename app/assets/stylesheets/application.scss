@@ -1,3 +1,12 @@
+.neon-blue {
+    color: #00eaff !important;
+    text-shadow:
+        0 0 5px #00eaff,
+        0 0 10px #00eaff,
+        0 0 20px #00eaff,
+        0 0 40px #00eaff;
+    font-weight: bold;
+}
 @import 'bootstrap/scss/bootstrap';
 @import 'bs_custom.scss';
 h1,h2,h3,h4,h5{
