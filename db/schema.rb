@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_04_064739) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_04_171211) do
   create_table "room_participants", force: :cascade do |t|
     t.integer "room_id", null: false
     t.integer "user_id", null: false
@@ -18,6 +18,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_04_064739) do
     t.datetime "updated_at", null: false
     t.string "guest_id"
     t.string "guest_name"
+    t.datetime "finished_at"
     t.index ["room_id"], name: "index_room_participants_on_room_id"
     t.index ["user_id"], name: "index_room_participants_on_user_id"
   end
@@ -58,6 +59,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_04_064739) do
     t.integer "ai_score"
     t.integer "user_id", null: false
     t.integer "room_participant_id"
+    t.text "ai_evaluation_comment"
     t.index ["room_id"], name: "index_words_on_room_id"
     t.index ["room_participant_id"], name: "index_words_on_room_participant_id"
     t.index ["user_id"], name: "index_words_on_user_id"

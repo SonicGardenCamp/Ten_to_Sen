@@ -1,28 +1,25 @@
 <div class="container py-5 text-center">
   <h1 class="mb-4">ゲーム結果</h1>
 
-  <!-- 勝者発表 -->
   <% if @winner %>
     <div class="alert alert-success mb-4">
       <h2>🏆 1位: <%= @winner.username %> 🏆</h2>
     </div>
   <% end %>
 
-  <!-- 順位表示 -->
   <div class="ranking-container">
     <% @ranked_results.each do |ranking_data| %>
       <div class="row justify-content-center mb-4">
         <div class="col-md-8">
           <div class="card <%= 'border-warning shadow-lg' if ranking_data[:rank] == 1 %> <%= 'border-primary' if ranking_data[:is_current_user] %>">
 
-            <!-- 順位とユーザー名のヘッダー -->
             <div class="card-header d-flex align-items-center justify-content-between
                         <%= 'bg-warning text-dark fw-bold' if ranking_data[:rank] == 1 %>
                         <%= 'bg-primary text-white' if ranking_data[:is_current_user] && ranking_data[:rank] != 1 %>
                         <%= 'bg-secondary text-white' if !ranking_data[:is_current_user] && ranking_data[:rank] != 1 %>">
 
               <div class="d-flex align-items-center">
-                <!-- 順位表示 -->
+              
                 <span class="badge
                            <%= 'bg-dark text-warning' if ranking_data[:rank] == 1 %>
                            <%= 'bg-light text-primary' if ranking_data[:rank] != 1 %>
@@ -30,20 +27,17 @@
                   <%= ranking_data[:rank] %>位
                 </span>
 
-                <!-- ユーザー名 -->
                 <h4 class="mb-0">
                   <%= ranking_data[:user].username %>
                   <%= ' (あなた)' if ranking_data[:is_current_user] %>
                 </h4>
               </div>
 
-              <!-- 1位の場合は王冠アイコン -->
               <% if ranking_data[:rank] == 1 %>
                 <span class="fs-2">👑</span>
               <% end %>
             </div>
 
-            <!-- スコア表示 -->
             <div class="card-body text-center">
               <div class="row">
                 <div class="col-md-4">
@@ -73,7 +67,6 @@
               </div>
             </div>
 
-            <!-- 単語履歴（アコーディオン） -->
             <div class="card-footer">
               <div class="accordion" id="wordsAccordion<%= ranking_data[:rank] %>">
                 <div class="accordion-item">
@@ -93,11 +86,21 @@
                     <div class="accordion-body" style="max-height: 300px; overflow-y: auto;">
                       <% ranking_data[:result][:words].each do |word| %>
                         <%= turbo_frame_tag "word_evaluation_#{word.id}" do %>
-                          <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-                            <p class="fs-6 mb-0 text-start fw-medium"><%= word.body %></p>
-                            <div class="text-end">
+                          <div class="d-flex justify-content-between align-items-center mb-2 pb-2">
+                            <div class="flex-grow-1 text-start">
+                              <p class="fs-6 mb-0 fw-medium"><%= word.body %></p>
+                              <%# ▼▼▼ 変更箇所 ▼▼▼ %>
+                              <% if word.ai_evaluation_comment.present? %>
+                                <div class="text-muted small mt-1 p-2 bg-light rounded">
+                                  <i class="bi bi-robot me-1"></i>
+                                  <%= word.ai_evaluation_comment %>
+                                </div>
+                              <% end %>
+                              <%# ▲▲▲ 変更箇所 ▲▲▲ %>
+                            </div>
+                            <div class="text-end ms-3" style="min-width: 120px;">
                               <% if word.score.to_i > 0 %>
-                                <span class="badge bg-secondary rounded-pill">基礎: <%= word.score %>点</span>
+                                 <span class="badge bg-secondary rounded-pill">基礎: <%= word.score %>点</span>
                                 <% if word.ai_score.present? %>
                                   <span class="badge bg-info rounded-pill">AI: <%= word.ai_score %>点</span>
                                 <% else %>

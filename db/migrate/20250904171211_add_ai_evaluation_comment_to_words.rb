@@ -1,0 +1,5 @@
+class AddAiEvaluationCommentToWords < ActiveRecord::Migration[8.0]
+  def change
+    add_column :words, :ai_evaluation_comment, :text
+  end
+end
