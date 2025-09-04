@@ -11,10 +11,15 @@ Rails.application.routes.draw do
       root to: 'devise/sessions#new', as: :unauthenticated_root
     end
   end
-  
-  resources :rooms, only: %i[index show create new] do
-    get :result, on: :member
+
+  resources :rooms do
+    member do
+      get :status      # ステータス確認用
+      delete :leave    # 退出用（既存）
+      post :join       # 参加用（既存）
+      get :result      # 結果表示用（既存）
+    end
   end
-  
+
   resources :words, only: [:create]
 end
