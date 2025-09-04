@@ -1,25 +1,11 @@
 <div class="container py-5">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div class="greeting">
-      <% if current_user %>
-        こんにちは、<%= current_user.username %> さん
-        <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "game-btn" %>
-      <% else %>
-        ゲストでアクセス中です
-        <%= link_to "ログイン", new_user_session_path, class: "game-btn" %>
-      <% end %>
-    </div>
-  </div>
-
   <div class="text-center mb-5">
-    <div class="d-flex justify-content-center gap-3">
-      <% if current_user %>
-        <%= button_to "ルームを作成", rooms_path, method: :post, class: 'game-btn' %>
-      <% else %>
-        <%= link_to "ルーム作成はログインが必要です", new_user_session_path, class: 'btn btn-warning' %>
-      <% end %>
-      <%= link_to "ソロモードで遊ぶ", solo_rooms_path, class: 'btn btn-success btn-lg' %>
-    </div>
+    <% if current_user %>
+      <%= button_to "ルームを作成", rooms_path, method: :post, class: 'game-btn' %>
+    <% else %>
+      <%= link_to "ルーム作成はログインが必要です", new_user_session_path, class: 'btn btn-warning' %>
+    <% end %>
+    <%= button_to "ソロモードで遊ぶ", solo_rooms_path, method: :post, class: 'game-btn' %>
   </div>
 
   <h2 class="mb-3" style="color:#00ffe7;text-shadow:0 0 8px #00ffe7,0 0 2px #fff;">ソロスコアランキング</h2>
@@ -86,7 +72,8 @@
     /* スクロール関連のCSSを削除 */
   </style>
 
-  <h2 class="mb-3">参加可能なルーム</h2>
+  <h2 class="joinpossible-text">参加可能なルーム</h2>
+
   <% if @rooms.any? %>
     <ul class="list-group">
       <% @rooms.each do |room| %>
@@ -100,6 +87,6 @@
       <% end %>
     </ul>
   <% else %>
-    <p>参加可能なルームはありません。</p>
+    <p class="joinpossible-subtext">参加可能なルームはありません。</p>
   <% end %>
 </div>
