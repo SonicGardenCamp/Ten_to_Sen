@@ -10,12 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_04_044805) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_04_064739) do
   create_table "room_participants", force: :cascade do |t|
     t.integer "room_id", null: false
     t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "guest_id"
+    t.string "guest_name"
+    t.index ["room_id", "user_id"], name: "index_room_participants_on_room_id_and_user_id", unique: true
     t.index ["room_id"], name: "index_room_participants_on_room_id"
     t.index ["user_id"], name: "index_room_participants_on_user_id"
   end
@@ -29,8 +32,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_04_044805) do
     t.string "theme"
     t.string "game_mode"
     t.string "password_digest"
-    t.integer "max_players"
-    t.integer "creator_id"
+    t.integer "max_players", default: 2, null: false
+    t.integer "creator_id", null: false
+    t.index ["creator_id"], name: "index_rooms_on_creator_id"
     t.index ["status"], name: "index_rooms_on_status"
   end
 
@@ -55,12 +59,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_04_044805) do
     t.integer "score"
     t.integer "ai_score"
     t.integer "user_id", null: false
+    t.integer "room_participant_id"
     t.index ["room_id"], name: "index_words_on_room_id"
+    t.index ["room_participant_id"], name: "index_words_on_room_participant_id"
     t.index ["user_id"], name: "index_words_on_user_id"
   end
 
   add_foreign_key "room_participants", "rooms"
   add_foreign_key "room_participants", "users"
+  add_foreign_key "rooms", "users", column: "creator_id"
+  add_foreign_key "words", "room_participants"
   add_foreign_key "words", "rooms"
   add_foreign_key "words", "users"
 end

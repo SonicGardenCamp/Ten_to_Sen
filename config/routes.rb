@@ -13,6 +13,10 @@ Rails.application.routes.draw do
   end
 
   resources :rooms do
+    collection do
+      get :solo       # ソロモード作成
+    end
+
     member do
       get :status      # ステータス確認用
       delete :leave    # 退出用（既存）

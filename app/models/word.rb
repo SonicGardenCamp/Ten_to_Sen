@@ -1,6 +1,7 @@
 class Word < ApplicationRecord
   belongs_to :room
-  belongs_to :user
+  belongs_to :user, optional: true
+  belongs_to :room_participant
 
   after_update_commit -> { broadcast_replace_to "word_evaluation_#{id}" }
 

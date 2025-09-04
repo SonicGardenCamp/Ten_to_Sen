@@ -3,6 +3,9 @@
         "data-shiritori-target" => "form"
       }) do |form| %>
     <%= form.hidden_field :room_id, value: room.id %>
+    <%= form.hidden_field :room_participant_id, value: room.room_participants.find_by(
+      guest_user? ? { guest_id: cookies.encrypted[:guest_id] } : { user_id: current_user.id }
+    )&.id %>
     <div class="input-group">
       <%= form.text_field :body, class: 'form-control form-control-lg', placeholder: 'ローマ字で入力...', "data-shiritori-target" => "input", autocomplete: "off" %>
       <%= form.submit "送信", class: 'btn btn-primary' %>
