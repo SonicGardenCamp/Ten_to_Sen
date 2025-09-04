@@ -29,27 +29,71 @@ class WordsController < ApplicationController
 
     when :game_over
       score = 100 + (new_word.length * 10)
-      room.words.create!(
+      word_record = room.words.create!(
         body: new_word,
         score: score,
         room_participant: room_participant,
         user: room_participant.user
       )
 
-      ShiritoriEvaluationJob.perform_later(room.words.where(room_participant: room_participant).last)
+      ShiritoriEvaluationJob.perform_later(word_record)
 
-      render turbo_stream: [
-        turbo_stream.update('flash-messages', partial: 'layouts/flash', locals: { message: result[:message], type: 'danger' }),
-        turbo_stream.append_all('body', view_context.javascript_tag(<<-JS.squish)),
-          document.dispatchEvent(new CustomEvent('game:over', {
-            detail: { redirectUrl: '#{result_room_path(room)}' }
-          }))
-        JS
-      ]
+      if room.game_mode == "score_attack"
+        # スコアアタック
+        render turbo_stream: [
+          turbo_stream.update('flash-messages',
+            partial: 'layouts/flash',
+            locals: { message: result[:message], type: 'danger' }
+          ),
+          turbo_stream.append_all('body', view_context.javascript_tag(<<-JS.squish))
+            setTimeout(function() {
+              window.location.href = '#{result_room_path(room)}';
+            }, 1000);
+          JS
+        ]
 
+      else
+        # ★ 対戦モード
+        alive_participants = room.room_participants.any? do |p|
+          last_word = room.words.where(room_participant: p).last
+          last_word && !last_word.body.ends_with?("ん")
+        end
+
+        if alive_participants
+          # まだ続いてる人がいる → 待機
+          render turbo_stream: [
+            turbo_stream.update('flash-messages',
+              partial: 'layouts/flash',
+              locals: { message: result[:message], type: 'danger' }
+            ),
+            turbo_stream.append('word-history',
+              partial: 'words/word',
+              locals: { word: word_record }
+            ),
+            turbo_stream.append_all('body', view_context.javascript_tag(<<-JS.squish))
+              document.dispatchEvent(new CustomEvent('game:over', {
+                detail: { message: '#{result[:message]}' }
+              }))
+            JS
+          ]
+        else
+          # 対戦モード（全員「ん」で終了 → 即リザルト）
+          render turbo_stream: [
+            turbo_stream.append_all('body', view_context.javascript_tag(<<-JS.squish))
+              setTimeout(function() {
+                window.location.href = '#{result_room_path(room)}';
+              }, 1000);
+            JS
+          ]
+        end
+      end
     else
+      # ❗️このブロックを戻さないと警告表示されない
       render turbo_stream: [
-        turbo_stream.update('flash-messages', partial: 'layouts/flash', locals: { message: result[:message], type: 'warning' }),
+        turbo_stream.update('flash-messages',
+          partial: 'layouts/flash',
+          locals: { message: result[:message], type: 'warning' }
+        ),
         turbo_stream.replace('word_form', partial: 'rooms/word_form', locals: { room: room }),
       ], status: :unprocessable_entity
     end

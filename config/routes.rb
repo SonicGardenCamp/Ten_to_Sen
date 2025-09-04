@@ -15,6 +15,8 @@ Rails.application.routes.draw do
   resources :rooms do
     collection do
       post :solo       # ソロモード作成
+      get :solo_ranking # ソロスコアランキング
+      get :solo_ranking_json # ソロスコアランキングAPI（画面遷移なし用）
     end
 
     member do
