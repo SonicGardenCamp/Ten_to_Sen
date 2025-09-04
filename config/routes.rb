@@ -1,19 +1,26 @@
 Rails.application.routes.draw do
   devise_for :users
 
-  #認証済みか、認証済みでないかで2種類のrootのどちらかを出す
-  authenticated :user do  #認証済みのユーザー
+  # 認証済みユーザーのルートパス
+  authenticated :user do
     root to: 'rooms#index', as: :authenticated_root
   end
 
-  unauthenticated do  #認証済みでないユーザー
-    root to: 'devise/sessions#new', as: :unauthenticated_root
+  devise_scope :user do
+    unauthenticated do
+      root to: 'devise/sessions#new', as: :unauthenticated_root
+    end
   end
 
-  resources :rooms, only: %i[index show create new] do
-    get :result, on: :member # この行を追加
-    get :new    #ルームの新規作成画面
+  resources :rooms do
+    member do
+      get :status      # ステータス確認用
+      delete :leave    # 退出用（既存）
+      post :join       # 参加用（既存）
+      get :result      # 結果表示用（既存）
+    end
   end
+
   resources :words, only: [:create]
 
   # デプロイ時に必須（消さないでね）

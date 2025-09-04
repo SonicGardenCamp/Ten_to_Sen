@@ -10,28 +10,27 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_02_073541) do
-  create_table "models", force: :cascade do |t|
-    t.string "email", default: "", null: false
-    t.string "encrypted_password", default: "", null: false
-    t.string "reset_password_token"
-    t.datetime "reset_password_sent_at"
-    t.datetime "remember_created_at"
+ActiveRecord::Schema[8.0].define(version: 2025_09_03_212106) do
+  create_table "room_participants", force: :cascade do |t|
+    t.integer "room_id", null: false
+    t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["email"], name: "index_models_on_email", unique: true
-    t.index ["reset_password_token"], name: "index_models_on_reset_password_token", unique: true
+    t.index ["room_id"], name: "index_room_participants_on_room_id"
+    t.index ["user_id"], name: "index_room_participants_on_user_id"
   end
 
   create_table "rooms", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "started_at"
     t.string "name"
     t.string "theme"
     t.string "game_mode"
     t.string "password_digest"
-    t.integer "status", default: 0, null: false
-    t.datetime "started_at"
+    t.integer "max_players"
+    t.integer "creator_id"
     t.index ["status"], name: "index_rooms_on_status"
   end
 
@@ -54,8 +53,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_02_073541) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "score"
+    t.integer "ai_score"
     t.index ["room_id"], name: "index_words_on_room_id"
   end
 
+  add_foreign_key "room_participants", "rooms"
+  add_foreign_key "room_participants", "users"
   add_foreign_key "words", "rooms"
 end
