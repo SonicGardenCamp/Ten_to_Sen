@@ -49,21 +49,21 @@ body{
     font-size: 20px;
     position: absolute;    /* 中央固定したいなら絶対配置 */
     left: 50%;
-    top:50%;
+    top:80%;
     transform: translate(-50%, 0%);
 }
 .joinpossible-subtext{
     font-size: 20px;
     position: absolute;    /* 中央固定したいなら絶対配置 */
     left: 50%;
-    top:55%;
+    top:85%;
     transform: translate(-50%, 0%);
 }
 .list-group{
     font-size: 20px;
     position: absolute;    /* 中央固定したいなら絶対配置 */
     left: 50%;
-    top:55%;
+    top:85%;
     width: 80%;
     transform: translate(-50%, 0%);
 }
