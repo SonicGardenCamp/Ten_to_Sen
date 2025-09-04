@@ -18,28 +18,6 @@ class RoomsController < ApplicationController
     redirect_to room_path(room), notice: 'ルームを作成しました。相手を待っています…'
   end
 
-  # 待機 or 対戦画面
-  def show
-    @room = Room.find(params[:id])
-
-    # 参加者以外は参加ページへ誘導
-    unless @room.room_participants.exists?(user_id: current_user.id)
-      redirect_to rooms_path, alert: 'このルームの参加者ではありません。' and return
-    end
-
-    # 対戦中に入ってきたら、対戦画面へ（ここであなたの既存ゲーム画面を出す）
-    if @room.respond_to?(:playing?) && @room.playing?
-      # 初期単語がなければ生成
-      unless @room.words.exists?
-        initial_word = InitialWordService.generate
-        @room.words.create!(body: initial_word, score: 0)
-      end
-      render :show
-    else
-      render :waiting
-    end
-  end
-
   # 参加ボタン
   def join
     room = Room.find(params[:id])
@@ -49,25 +27,45 @@ class RoomsController < ApplicationController
     end
 
     Room.transaction do
-      room.lock!           # 競合対策
+      room.lock!
       if room.full?
         redirect_to root_path, alert: 'このルームは定員に達しています。' and return
       end
 
       room.room_participants.create!(user: current_user)
 
-      # 定員に達したら開始
       if room.full?
         room.update!(status: :playing) if room.respond_to?(:status)
-        # ゲーム開始時に初期単語を生成
-        unless room.words.exists?
-          initial_word = InitialWordService.generate
-          room.words.create!(body: initial_word, score: 0)
+
+        # 【修正】各参加者に「しりとり」の初期単語を生成
+        room.room_participants.includes(:user).each do |participant|
+          unless room.words.where(user: participant.user).exists?
+            room.words.create!(body: 'しりとり', score: 0, user: participant.user)
+          end
         end
       end
     end
 
     redirect_to room_path(room)
+  end
+
+  def show
+    @room = Room.find(params[:id])
+
+    unless @room.room_participants.exists?(user_id: current_user.id)
+      redirect_to rooms_path, alert: 'このルームの参加者ではありません。' and return
+    end
+
+    if @room.respond_to?(:playing?) && @room.playing?
+      # 【修正】現在のユーザーに「しりとり」の初期単語がなければ生成
+      unless @room.words.where(user: current_user).exists?
+        @room.words.create!(body: 'しりとり', score: 0, user: current_user)
+      end
+
+      render :show
+    else
+      render :waiting
+    end
   end
 
   # ステータス確認用API（AJAX用）
@@ -95,9 +93,32 @@ class RoomsController < ApplicationController
   # 結果表示（勝敗判定はあなたのスコア算出ロジックに合わせて実装）
   def result
     @room = Room.find(params[:id])
-    @words = @room.words.order(:created_at) # `@words`はbefore_actionで設定済み
-    # `@total_score`を計算して設定
-    @total_score = @words.sum(:score)
+
+    # 参加者とその結果データを正しく設定
+    @participants = @room.room_participants.includes(:user)
+    @results = {}
+
+    # 参加者がいない場合の対策
+    if @participants.empty?
+      redirect_to rooms_path, alert: 'このルームには参加者がいません。' and return
+    end
+
+    @participants.each do |participant|
+      user_words = @room.words.where(user: participant.user).order(:created_at)
+      total_base_score = user_words.sum(:score)
+      total_ai_score = user_words.sum { |word| word.ai_score || 0 }
+
+      @results[participant.user] = {
+        words: user_words,
+        total_base_score: total_base_score,
+        total_ai_score: total_ai_score,
+        total_score: total_base_score + total_ai_score,
+        word_count: user_words.count - 1  # 初期単語「しりとり」を除く
+      }
+    end
+
+    # 勝者を決定
+    @winner = @results.max_by { |user, result| result[:total_score] }&.first
   end
 
   private
@@ -107,7 +128,8 @@ class RoomsController < ApplicationController
     end
 
     def set_words
-      @words = @room.words.order(:created_at)
+      # 【修正】現在のユーザーの単語のみを表示
+      @words = @room.words.where(user: current_user).order(:created_at) if @room && current_user
     end
 
     def room_params
