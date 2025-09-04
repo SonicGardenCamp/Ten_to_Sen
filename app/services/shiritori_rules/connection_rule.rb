@@ -70,6 +70,7 @@ module ShiritoriRules
     }.freeze
 
     def validate
+      # 【修正】現在のユーザーの最後の単語をチェック
       return unless last_word
 
       last_char = get_last_char_for_shiritori(last_word)
