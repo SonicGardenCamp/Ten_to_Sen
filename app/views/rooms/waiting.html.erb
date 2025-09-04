@@ -5,7 +5,7 @@
   <h5 class="mt-4">参加者</h5>
   <ul class="list-unstyled" id="participants-list">
     <% @room.participants.each do |u| %>
-      <li><%= u.username %></li>
+      <h5><li><%= u.username %></li></h5>
     <% end %>
   </ul>
 

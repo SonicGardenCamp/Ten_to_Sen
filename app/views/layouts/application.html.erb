@@ -24,9 +24,18 @@
 
   <body>
     <div class="titlecontainer">
-      <div class="titlemenubox"></div>
-        
-        
+      <div class="titlemenubox">
+        <% if controller_name == "rooms" %>
+          <div class="greeting">  #greetingのページでのみ表示
+            <% if current_user %>
+              こんにちは、<%= current_user.username %> さん
+               <%= button_to "ログアウト", destroy_user_session_path, method: :delete , class:"logout-btn" %>
+            <% else %>
+              ゲストでアクセス中です
+            <% end %>
+          </div>
+        <% end %>
+      </div>
     </div>
     <h1 class="titletext">
         <h1 class="titletext_sub">

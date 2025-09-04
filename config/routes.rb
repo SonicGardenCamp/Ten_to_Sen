@@ -14,7 +14,7 @@ Rails.application.routes.draw do
 
   resources :rooms do
     collection do
-      get :solo       # ソロモード作成
+      post :solo       # ソロモード作成
     end
 
     member do
