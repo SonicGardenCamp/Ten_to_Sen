@@ -70,7 +70,8 @@ class RoomsController < ApplicationController
         # 【修正】各参加者に「しりとり」の初期単語を生成
         room.room_participants.includes(:user).each do |participant|
           unless room.words.where(user: participant.user).exists?
-            room.words.create!(body: 'しりとり', score: 0, user: participant.user, room_participant: participant)
+        room.words.create!(body: 'しりとり', score: 0, user: participant.user, room_participant: participant)
+
           end
         end
       end
