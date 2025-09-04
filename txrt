@@ -1,18 +1,3 @@
-  # 全ユーザーのソロスコアランキング（JSON返却）
-  def solo_ranking_json
-    ranking = Word.joins(:user)
-      .group('users.id', 'users.username')
-      .select('users.id, users.username, SUM(words.score) AS total_score')
-      .order('total_score DESC')
-
-    render json: ranking.map.with_index(1) { |row, i|
-      {
-        rank: i,
-        username: row.username,
-        total_score: row.total_score
-      }
-    }
-  end
 class RoomsController < ApplicationController
   before_action :set_room, only: %i[show result status]
   before_action :set_words, only: %i[show result]
@@ -54,10 +39,6 @@ class RoomsController < ApplicationController
 
   def index
     @rooms = Room.available.order(created_at: :desc)
-    @ranking = Word.joins(:user)
-      .group('users.id', 'users.username')
-      .select('users.id, users.username, SUM(words.score) AS total_score')
-      .order('total_score DESC')
   end
 
   # ルーム作成 → ホストは待機画面へ
@@ -89,8 +70,16 @@ class RoomsController < ApplicationController
         # 【修正】各参加者に「しりとり」の初期単語を生成
         room.room_participants.includes(:user).each do |participant|
           unless room.words.where(user: participant.user).exists?
-        room.words.create!(body: 'しりとり', score: 0, user: participant.user, room_participant: participant)
-
+<<<<<<< hassan/add-sound-while-typing
+            room.words.create!(body: 'しりとり', score: 0, user: participant.user, room_participant: participant)
+=======
+            room.words.create!(
+              body: 'しりとり',
+              score: 0,
+              user: participant.user,
+              room_participant: participant   # ← これを追加
+            )
+>>>>>>> main
           end
         end
       end
@@ -148,7 +137,7 @@ class RoomsController < ApplicationController
 
     # 参加者とその結果データを正しく設定
     @participants = @room.room_participants.includes(:user)
-    results_data = {}
+    @results = {}
 
     # 参加者がいない場合の対策
     if @participants.empty?
@@ -160,7 +149,7 @@ class RoomsController < ApplicationController
       total_base_score = user_words.sum(:score)
       total_ai_score = user_words.sum { |word| word.ai_score || 0 }
 
-      results_data[participant.user] = {
+      @results[participant.user] = {
         words: user_words,
         total_base_score: total_base_score,
         total_ai_score: total_ai_score,
@@ -169,27 +158,8 @@ class RoomsController < ApplicationController
       }
     end
 
-    # 【新規追加】総合スコア順にソートして順位付け
-    @ranked_results = results_data.sort_by { |user, result| -result[:total_score] }
-                                  .map.with_index(1) { |(user, result), rank|
-      {
-        rank: rank,
-        user: user,
-        result: result,
-        is_current_user: user == current_user
-      }
-    }
-
-    # 勝者を決定（1位のユーザー）
-    @winner = @ranked_results.first[:user] if @ranked_results.any?
-  end
-
-  # 全ユーザーのソロスコアランキング
-  def solo_ranking
-    @ranking = User.joins(:words)
-      .select('users.*, SUM(words.score) AS total_score')
-      .group('users.id')
-      .order('total_score DESC')
+    # 勝者を決定
+    @winner = @results.max_by { |user, result| result[:total_score] }&.first
   end
 
   private
