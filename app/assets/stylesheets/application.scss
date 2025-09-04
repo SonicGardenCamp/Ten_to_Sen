@@ -1,12 +1,18 @@
 @import 'bootstrap/scss/bootstrap';
 @import 'bs_custom.scss';
-h1{
-    color:white;
+h1,h2,h3,h4,h5{
+    color: cyan !important;
+    text-shadow: 0 0 5px cyan;
 }
 p{
-    color:white;
+    color: cyan !important;
+    text-shadow: 0 0 5px cyan;
 }
 
+label{
+    color: cyan !important;
+    text-shadow: 0 0 5px cyan;
+}
 body{
     background-image: url(images/bg.png);
     background-repeat:repeat;
@@ -59,7 +65,10 @@ body{
     clip-path: polygon(1% 1%, 99% 1%, 89% 98%, 11% 98%);
     
 }
-
+.greeting{
+    padding-left:90%;
+    color:white;
+}
 .card-header{
     background-color:#353535;
     color:white;
@@ -69,10 +78,13 @@ body{
 }
 
 .game-btn{
+    margin-top:20px;
     background-color:black;
     border:2px solid cyan;
     border-radius:6px;
-    color:cyan;
+    color: cyan !important;
+    text-shadow: 0 0 8px cyan;
+    box-shadow: 0 0 8px cyan;
     box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
     transition: transform 0.5s ease, box-shadow 0.5s ease;
 
@@ -90,3 +102,6 @@ body{
 }
 
 
+.all{
+    padding-left:50px;
+}
