@@ -7,14 +7,37 @@ export default class extends Controller {
   static values = { roomId: Number }
 
   connect() {
-    this.timeLeft = 30
-    this.startTimer()
-    if (this.hasInputTarget) {
-      this.inputTarget.focus()
+    this.timeLeft = 30;
+    const countdownArea = document.getElementById('countdown-area');
+    const gameArea = document.getElementById('game-area');
+    if (countdownArea && gameArea) {
+      let count = 3;
+      countdownArea.textContent = count;
+      gameArea.style.display = 'none';
+      const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownArea.textContent = count;
+        } else if (count === 0) {
+          countdownArea.textContent = 'スタート!';
+        } else {
+          clearInterval(interval);
+          countdownArea.style.display = 'none';
+          gameArea.style.display = '';
+          this.startTimer();
+          if (this.hasInputTarget) {
+            this.inputTarget.focus();
+          }
+        }
+      }, 1000);
+    } else {
+      this.startTimer();
+      if (this.hasInputTarget) {
+        this.inputTarget.focus();
+      }
     }
-
-    this.boundHandleGameOver = this.handleGameOver.bind(this)
-    document.addEventListener('game:over', this.boundHandleGameOver)
+    this.boundHandleGameOver = this.handleGameOver.bind(this);
+    document.addEventListener('game:over', this.boundHandleGameOver);
   }
 
   disconnect() {
