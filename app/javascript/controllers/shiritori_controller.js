@@ -12,16 +12,16 @@ export default class extends Controller {
     const gameArea = document.getElementById('game-area');
     if (countdownArea && gameArea) {
       let count = 3;
+      countdownArea.style.color = "white";
       countdownArea.textContent = count;
       gameArea.style.display = 'none';
       const interval = setInterval(() => {
         count--;
         if (count > 0) {
           countdownArea.textContent = count;
-          countdownArea.style.color = "white"; 
+          
         } else if (count === 0) {
           countdownArea.textContent = 'スタート!';
-          countdownArea.style.color = "white"; 
         } else {
           clearInterval(interval);
           countdownArea.style.display = 'none';
