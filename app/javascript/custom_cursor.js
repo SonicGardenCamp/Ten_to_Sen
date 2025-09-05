@@ -1,4 +1,8 @@
-document.addEventListener("DOMContentLoaded", () => {
+function setupCustomCursor() {
+  // すでにカーソルがあれば削除
+  document.querySelectorAll('svg.custom-cursor-svg').forEach(e => e.remove());
+  document.querySelectorAll('svg.custom-cursor-trail-svg').forEach(e => e.remove());
+
   // カスタムカーソル本体（SVGで作成）
   const cursorSize = 64;
   const cursorSvgNS = "http://www.w3.org/2000/svg";
@@ -87,4 +91,8 @@ document.addEventListener("DOMContentLoaded", () => {
     lastX = e.clientX;
     lastY = e.clientY;
   });
-});
+};
+
+// Turbo対応イベントで呼び出す
+document.addEventListener("turbo:load", setupCustomCursor);
+document.addEventListener("DOMContentLoaded", setupCustomCursor);
