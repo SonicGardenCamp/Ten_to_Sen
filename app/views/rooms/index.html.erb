@@ -62,8 +62,8 @@
       <% @ranking.each_with_index do |row, i| %>
         <tr>
           <td><%= i + 1 %></td>
-          <td><%= row.username %></td>
-          <td><%= row.total_score %></td>
+          <td><%= row[:username] %></td>
+          <td><%= row[:score] %></td>
         </tr>
       <% end %>
     </tbody>
