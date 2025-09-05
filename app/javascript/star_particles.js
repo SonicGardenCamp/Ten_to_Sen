@@ -31,7 +31,7 @@ function createStarParticles(x, y) {
 
     // ランダムな角度・飛距離（差を大きく）
     const angle = Math.random() * 2 * Math.PI;
-    const distance = 10 + Math.random() * 1000; // 最小40px～最大280px
+    const distance = 10 + Math.random() * 1000;
     const velocityX = Math.cos(angle) * distance / 60;
     const velocityY = Math.sin(angle) * distance / 60 - 1.2;
 
@@ -39,13 +39,13 @@ function createStarParticles(x, y) {
     let posX = x - size / 2;
     let posY = y - size / 2;
     let rotate = Math.random() * 360;
-    let scale = Math.random()*3;
-    let speed = Math.random()*10;
+    let scale = Math.random() * 3;
+    let speed = Math.random() * 3;
 
     function animate() {
       frame++;
-      posX += velocityX*speed;
-      posY += velocityY + (0.1 * frame)*speed; // 重力加算
+      posX += velocityX * speed;
+      posY += velocityY + (0.08 * frame) * speed;
       scale += 0.01;
       rotate += 8;
       star.style.left = `${posX}px`;
@@ -65,8 +65,6 @@ function createStarParticles(x, y) {
 // show画面でのみキーボード入力時に星を表示
 if (window.location.pathname.match(/\/rooms\/\d+$/)) {
   document.addEventListener("keydown", (e) => {
-    if (!/^[a-zA-Z]$/.test(e.key)) return;
-
     const active = document.activeElement;
     if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
       const rect = active.getBoundingClientRect();
