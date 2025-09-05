@@ -40,10 +40,22 @@ class RoomsController < ApplicationController
 
   def index
     @rooms = Room.available.order(created_at: :desc)
-    @ranking = Word.joins(:user)
-      .group('users.id', 'users.username')
-      .select('users.id, users.username, SUM(words.score) AS total_score')
-      .order('total_score DESC')
+    # ソロゲーム部屋（max_players = 1）の全参加者について、1ゲーム（1部屋）で獲得した点数の最高得点ランキング
+    solo_rooms = Room.where(max_players: 1)
+    # 各ユーザーごとに、各ソロ部屋での合計スコア（score+ai_score+chain_bonus_score）を計算し、その中の最大値をランキング化
+    user_max_scores = {}
+    solo_rooms.includes(:room_participants).find_each do |room|
+      room.room_participants.each do |participant|
+        words = Word.where(room_id: room.id, room_participant_id: participant.id)
+        total_score = words.sum(:score).to_i + words.sum(:ai_score).to_i + words.sum(:chain_bonus_score).to_i
+        user = participant.user
+        next unless user
+        if user_max_scores[user.id].nil? || user_max_scores[user.id][:score] < total_score
+          user_max_scores[user.id] = { username: user.username, score: total_score }
+        end
+      end
+    end
+  @ranking = user_max_scores.values.sort_by { |h| -h[:score] }
   end
 
   # ルーム作成 → ホストは待機画面へ
@@ -130,12 +142,12 @@ class RoomsController < ApplicationController
   # ⭐️ ここが新しい `result` アクションです ⭐️
   def result
     @room = Room.find(params[:id])
-    @participants = @room.room_participants.includes(:user, :words)
+    @participants = @room.room_participants.includes(:user)
 
     results = @participants.map do |participant|
-      words = participant.words
-      
-      # nilを0として安全に合計する
+      # 部屋内のこの参加者の全単語のみを対象
+      words = @room.words.where(room_participant_id: participant.id)
+
       total_base_score = words.pluck(:score).compact.sum
       total_ai_score = words.pluck(:ai_score).compact.sum
       total_chain_bonus_score = words.pluck(:chain_bonus_score).compact.sum
