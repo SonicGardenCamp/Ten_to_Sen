@@ -20,7 +20,11 @@ class WordsController < ApplicationController
         user: room_participant.user
       )
 
+      # 単体評価Job
       ShiritoriEvaluationJob.perform_later(@word_record)
+      # 連鎖ボーナス評価Job
+      previous_word = room.words.where.not(id: @word_record.id).order(created_at: :desc).first
+      ShiritoriChainEvaluationJob.perform_later(@word_record, previous_word) if previous_word
 
       render turbo_stream: [
         turbo_stream.append('word-history', partial: 'words/word', locals: { word: @word_record }),
@@ -36,7 +40,11 @@ class WordsController < ApplicationController
         user: room_participant.user
       )
 
+      # 単体評価Job
       ShiritoriEvaluationJob.perform_later(word_record)
+      # 連鎖ボーナス評価Job
+      previous_word = room.words.where.not(id: word_record.id).order(created_at: :desc).first
+      ShiritoriChainEvaluationJob.perform_later(word_record, previous_word) if previous_word
 
       if room.game_mode == "score_attack"
         # スコアアタック

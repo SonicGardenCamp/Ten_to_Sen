@@ -1,18 +1,3 @@
-  # 全ユーザーのソロスコアランキング（JSON返却）
-  def solo_ranking_json
-    ranking = Word.joins(:user)
-      .group('users.id', 'users.username')
-      .select('users.id, users.username, SUM(words.score) AS total_score')
-      .order('total_score DESC')
-
-    render json: ranking.map.with_index(1) { |row, i|
-      {
-        rank: i,
-        username: row.username,
-        total_score: row.total_score
-      }
-    }
-  end
 class RoomsController < ApplicationController
   before_action :set_room, only: %i[show result status]
   before_action :set_words, only: %i[show result]
@@ -23,7 +8,8 @@ class RoomsController < ApplicationController
       name: "ソロモード",
       status: :playing,
       max_players: 1,
-      creator_id: current_user&.id
+      creator_id: current_user&.id,
+      game_mode: "score_attack" # game_modeをscore_attackに設定
     )
 
     # プレイヤー情報を作成（ログインユーザーまたはゲスト）
@@ -50,7 +36,6 @@ class RoomsController < ApplicationController
 
   def new
     @room = Room.new
-    @room.save
   end
 
   def index
@@ -142,46 +127,38 @@ class RoomsController < ApplicationController
     redirect_to rooms_path, notice: 'ルームを退出しました。'
   end
 
-  # 結果表示（勝敗判定はあなたのスコア算出ロジックに合わせて実装）
+  # ⭐️ ここが新しい `result` アクションです ⭐️
   def result
     @room = Room.find(params[:id])
+    @participants = @room.room_participants.includes(:user, :words)
 
-    # 参加者とその結果データを正しく設定
-    @participants = @room.room_participants.includes(:user)
-    results_data = {}
+    results = @participants.map do |participant|
+      words = participant.words
+      
+      # nilを0として安全に合計する
+      total_base_score = words.pluck(:score).compact.sum
+      total_ai_score = words.pluck(:ai_score).compact.sum
+      total_chain_bonus_score = words.pluck(:chain_bonus_score).compact.sum
 
-    # 参加者がいない場合の対策
-    if @participants.empty?
-      redirect_to rooms_path, alert: 'このルームには参加者がいません。' and return
-    end
-
-    @participants.each do |participant|
-      user_words = @room.words.where(user: participant.user).order(:created_at)
-      total_base_score = user_words.sum(:score)
-      total_ai_score = user_words.sum { |word| word.ai_score || 0 }
-
-      results_data[participant.user] = {
-        words: user_words,
-        total_base_score: total_base_score,
-        total_ai_score: total_ai_score,
-        total_score: total_base_score + total_ai_score,
-        word_count: user_words.count - 1  # 初期単語「しりとり」を除く
-      }
-    end
-
-    # 【新規追加】総合スコア順にソートして順位付け
-    @ranked_results = results_data.sort_by { |user, result| -result[:total_score] }
-                                  .map.with_index(1) { |(user, result), rank|
       {
-        rank: rank,
-        user: user,
-        result: result,
-        is_current_user: user == current_user
+        user: participant.user,
+        result: {
+          total_score: total_base_score + total_ai_score + total_chain_bonus_score,
+          total_base_score: total_base_score,
+          total_ai_score: total_ai_score,
+          total_chain_bonus_score: total_chain_bonus_score,
+          word_count: words.count,
+          words: words.order(created_at: :asc)
+        }
       }
-    }
+    end
 
-    # 勝者を決定（1位のユーザー）
-    @winner = @ranked_results.first[:user] if @ranked_results.any?
+    # スコアで降順にソート
+    @ranked_results = results.sort_by { |r| r[:result][:total_score] }.reverse.map.with_index(1) do |result, i|
+      result.merge(rank: i, is_current_user: (result[:user] == current_user))
+    end
+
+    @winner = @ranked_results.first[:user] if @ranked_results.present?
   end
 
   # 全ユーザーのソロスコアランキング
@@ -190,6 +167,22 @@ class RoomsController < ApplicationController
       .select('users.*, SUM(words.score) AS total_score')
       .group('users.id')
       .order('total_score DESC')
+  end
+
+  # 全ユーザーのソロスコアランキング（JSON返却）
+  def solo_ranking_json
+    ranking = Word.joins(:user)
+      .group('users.id', 'users.username')
+      .select('users.id, users.username, SUM(words.score) AS total_score')
+      .order('total_score DESC')
+
+    render json: ranking.map.with_index(1) { |row, i|
+      {
+        rank: i,
+        username: row.username,
+        total_score: row.total_score
+      }
+    }
   end
 
   private

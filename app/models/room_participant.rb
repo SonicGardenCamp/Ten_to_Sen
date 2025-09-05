@@ -5,6 +5,8 @@ class RoomParticipant < ApplicationRecord
   validates :user_id, uniqueness: { scope: :room_id }, if: :user_id?
   validate :user_or_guest_present
 
+  has_many :words, dependent: :destroy
+
   def display_name
     if user_id?
       user.username
