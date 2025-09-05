@@ -22,7 +22,7 @@
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
-  <body>
+  <body<%= ' class="game-area"' if controller_name == 'rooms' && action_name == 'show' %>>
     <div class="titlecontainer">
       <div class="titlemenubox">
         <% if controller_name == "rooms" %>
