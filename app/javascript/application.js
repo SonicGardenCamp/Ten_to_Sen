@@ -4,3 +4,4 @@ import "bootstrap"
 
 import "./custom_cursor"
 import "./star_particles"
+import "./typing_sound"
