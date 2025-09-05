@@ -18,8 +18,10 @@ export default class extends Controller {
         count--;
         if (count > 0) {
           countdownArea.textContent = count;
+          countdownArea.style.color = "white"; 
         } else if (count === 0) {
           countdownArea.textContent = 'スタート!';
+          countdownArea.style.color = "white"; 
         } else {
           clearInterval(interval);
           countdownArea.style.display = 'none';
