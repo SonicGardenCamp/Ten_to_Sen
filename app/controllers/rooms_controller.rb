@@ -55,7 +55,7 @@ class RoomsController < ApplicationController
         end
       end
     end
-  @ranking = user_max_scores.values.sort_by { |h| -h[:score] }
+    @ranking = user_max_scores.values.sort_by { |h| -h[:score] }.first(5)
   end
 
   # ルーム作成 → ホストは待機画面へ
