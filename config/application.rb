@@ -38,5 +38,7 @@ module CampTenToSen
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    config.assets.precompile += %w( *.mp3 *.wav *.ogg )
   end
 end
