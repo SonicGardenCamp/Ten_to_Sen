@@ -4,22 +4,43 @@ class ShiritoriEvaluationService
   end
 
   def evaluate_and_save
+    if @word.body == 'そにっくがーでん'
+      @word.update!(
+        ai_score: 2_000_000_000, # データベースの限界を超えない最大級のスコア
+        ai_evaluation_comment: '秘密の言葉が見つかりました！開発チームに感謝！'
+      )
+      return # ここで処理を終了
+    end
+
     # すでに評価済み、または基本スコアが0の場合は処理しない
     return if @word.ai_score.present? || @word.score == 0
 
-    # プロンプトを評価理由も取得できるように変更
-    prompt = "日本のしりとりで使う単語「#{@word.body}」を評価し、0から30の整数でスコアと、その評価理由を日本語で簡潔に付けてください。評価基準は名詞として一般的か、独創性があるかです。\n結果は「スコア: [点数]\\n理由: [評価理由]」の形式で返してください。\n例:\nスコア: 25\n理由: 一般的な名詞でありながら、しりとりではあまり使われない独創性があるため。"
+    prompt = <<-PROMPT
+# 概要
+あなたは、しりとりゲームの単語を評価するAIです。
+単語「#{@word.body}」を分析し、以下の2つを生成してください。
+
+1.  **評価点:** -10点から10点の間（整数）で評価します。独創性、ユーモア、専門性などを基準とします。
+2.  **評価理由:** 点数の理由について面白くて納得できる詳細な説明を「ですます調」で記述してください。
+
+評価理由において、最終的なスコア自体は絶対に表記しないでください。(例:〇〇点と評価しました)
+
+# 出力形式
+「評価点: [点数]」「理由: [評価理由]」の形式を必ず守ってください。
+    PROMPT
 
     begin
       response_text = GeminiCraft.generate_content(prompt)
-      
-      # 正規表現でスコアと理由をそれぞれ抽出
-      score = response_text.match(/スコア:\s*(\d+)/)&.captures&.first&.to_i
-      comment = response_text.match(/理由:\s*(.+)/)&.captures&.first
 
-      # スコアと理由の両方が取得できた場合のみ更新
-      if score && comment
-        @word.update!(ai_score: score, ai_evaluation_comment: comment)
+      base_score = response_text.match(/評価点:\s*(\-?\d+)/)&.captures&.first&.to_i
+      comment = response_text.match(/理由:\s*(.+)/m)&.captures&.first
+
+      if base_score && comment
+        word_jitter = @word.body.bytes.sum % 1999 - 999
+
+        final_score = (base_score * 1000) + word_jitter
+
+        @word.update!(ai_score: final_score, ai_evaluation_comment: comment)
       end
     rescue => e
       Rails.logger.error "AI評価中にエラーが発生しました。単語: '#{@word.body}', エラー: #{e.message}"
