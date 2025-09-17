@@ -1,3 +1,4 @@
+// 星のパーティクルを生成する関数 (変更なし)
 function createStarParticles(x, y) {
   const starSvgNS = "http://www.w3.org/2000/svg";
   const starCount = 3; // 一度に飛ばす星の数
@@ -26,10 +27,9 @@ function createStarParticles(x, y) {
     starPath.setAttribute("fill", pastelColor);
     starPath.setAttribute("stroke-width", "2");
     star.appendChild(starPath);
-
     document.body.appendChild(star);
 
-    // ランダムな角度・飛距離（差を大きく）
+    // ランダムな角度・飛距離
     const angle = Math.random() * 2 * Math.PI;
     const distance = 10 + Math.random() * 1000;
     const velocityX = Math.cos(angle) * distance / 60;
@@ -62,15 +62,36 @@ function createStarParticles(x, y) {
   }
 }
 
-// show画面でのみキーボード入力時に星を表示
-if (window.location.pathname.match(/\/rooms\/\d+$/)) {
-  document.addEventListener("keydown", (e) => {
-    const active = document.activeElement;
-    if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
-      const rect = active.getBoundingClientRect();
-      const x = rect.left + rect.width / 2;
-      const y = rect.top + rect.height / 2;
-      createStarParticles(x, y);
-    }
-  });
+
+// ユーザー入力時にパーティクルを生成する関数
+function handleStarParticlesInput(e) {
+  const value = e.data || "";
+  // 入力された文字がアルファベットか判定
+  if (!/^[a-zA-Z]$/.test(value)) return;
+
+  const rect = e.target.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  createStarParticles(x, y);
 }
+
+// イベントリスナーを設定・再設定する関数
+function setupStarParticles() {
+  if (window.location.pathname.match(/\/rooms\/\d+$/)) {
+    // roomsページにいる場合、すべての入力要素にイベントリスナーを追加する
+    document.querySelectorAll("input, textarea").forEach(el => {
+      // 重複を防ぐため、一度削除してから追加
+      el.removeEventListener("input", handleStarParticlesInput);
+      el.addEventListener("input", handleStarParticlesInput);
+    });
+  } else {
+    // roomsページ以外にいる場合、イベントリスナーをすべて削除する
+    document.querySelectorAll("input, textarea").forEach(el => {
+      el.removeEventListener("input", handleStarParticlesInput);
+    });
+  }
+}
+
+// 初回ページ読み込み時と、Turboによるページ遷移時にリスナーをセットアップ
+document.addEventListener("DOMContentLoaded", setupStarParticles);
+document.addEventListener("turbo:load", setupStarParticles);
