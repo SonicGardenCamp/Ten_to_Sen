@@ -69,6 +69,10 @@ class RoomsController < ApplicationController
   def join
     room = Room.find(params[:id])
 
+    if room.room_participants.exists?(user_id: current_user.id)
+      redirect_to room_path(room) and return
+    end
+
     if (room.respond_to?(:playing?) && room.playing?) || room.full?
       redirect_to root_path, alert: 'このルームは定員に達しています。' and return
     end
@@ -142,6 +146,25 @@ class RoomsController < ApplicationController
   # ⭐️ ここが新しい `result` アクションです ⭐️
   def result
     @room = Room.find(params[:id])
+    @evaluation_timed_out = false
+
+    # AI評価が完了するまで最大60秒待機
+    timeout = 60.seconds
+    start_time = Time.current
+    loop do
+      # 初期単語(score: 0)を除き、ai_scoreがまだ存在しない単語があるかチェック
+      all_words_evaluated = @room.words.where.not(score: 0).all? { |word| word.ai_score.present? }
+      break if all_words_evaluated
+
+      if Time.current - start_time > timeout
+        @evaluation_timed_out = true
+        break
+      end
+
+      sleep 1
+      @room.words.reload # DBから最新の状態を読み込む
+    end
+
     @participants = @room.room_participants.includes(:user)
 
     results = @participants.map do |participant|

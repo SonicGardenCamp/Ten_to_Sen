@@ -12,7 +12,8 @@ class WordsController < ApplicationController
 
     case result[:status]
     when :success
-      score = 100 + (new_word.length * 10)
+      # ===== ここで基礎点を計算しています =====
+      score = 100 + (new_word.length**2) * 10 # 新しい計算式
       @word_record = room.words.create(
         body: new_word,
         score: score,
@@ -32,7 +33,8 @@ class WordsController < ApplicationController
       ]
 
     when :game_over
-      score = 100 + (new_word.length * 10)
+      # ===== ここでも基礎点を計算しています =====
+      score = 100 + (new_word.length**2) * 10 # 新しい計算式
       word_record = room.words.create!(
         body: new_word,
         score: score,
