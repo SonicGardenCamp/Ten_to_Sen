@@ -11,4 +11,8 @@ class Word < ApplicationRecord
   # ユーザー別の単語を取得するスコープを追加
   scope :for_user, ->(user) { where(user: user) }
   scope :ordered, -> { order(:created_at) }
+  
+  def previous_word
+    room.words.where("created_at < ?", created_at).order(created_at: :desc).first
+  end
 end

@@ -182,4 +182,21 @@ body{
 .all{
     padding-left:50px;
 }
-
+// しりとり入力フォームのスタイル
+.word-input {
+  background-color: #333 !important;
+  color: #fff !important;
+  border: 1px solid #00ffe7 !important;
+  box-shadow: 0 0 8px #00ffe7a0;
+  // 文字が入力されたときの背景色も指定
+  -webkit-text-fill-color: #fff;
+  -webkit-box-shadow: 0 0 0px 1000px #333 inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+.word-input::placeholder {
+  color: #888 !important;
+}
+.word-input:focus {
+  background-color: #444 !important;
+  box-shadow: 0 0 12px #00ffe7;
+}
