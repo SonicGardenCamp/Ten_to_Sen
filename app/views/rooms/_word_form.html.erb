@@ -3,7 +3,11 @@
   action: 'submit->shiritori#submitWord'
 } do |f| %>
   <%= f.hidden_field :room_id, value: room.id %>
-  <%= f.hidden_field :room_participant_id, value: room.room_participants.find_by(user: current_user)&.id %>
+  
+  <%# ▼▼▼ 変更点：ゲストユーザーとログインユーザーの両方に対応する ▼▼▼ %>
+  <%= f.hidden_field :room_participant_id, value: room.room_participants.find_by(guest_user? ? { guest_id: current_guest_id } : { user: current_user })&.id %>
+  <%# ▲▲▲ 変更点 ▲▲▲ %>
+  
   <div class="input-group">
     <div id="flash-messages">
       <%# ここに警告メッセージが表示されます %>

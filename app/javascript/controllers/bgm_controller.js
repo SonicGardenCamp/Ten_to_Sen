@@ -1,166 +1,75 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  // ▼▼▼ 変更点 ▼▼▼
-  // HTMLからBGMファイルのパスの配列を受け取る
+  static targets = ["player", "toggleButton"]
   static values = {
-    files: Array
+    files: Array,
   }
-  // ▲▲▲ 変更点 ▲▲▲
 
   connect() {
-    if (window.BGMManager?.isInitialized) {
-      return;
-    }
-    // ▼▼▼ 変更点 ▼▼▼
-    // 受け取ったファイルリストをBGMManagerに渡す
-    this.initializeBGMManager(this.filesValue);
-    // ▲▲▲ 変更点 ▲▲▲
-  }
+    this.isPlaying = false
+    this.currentIndex = 0
 
-  // ▼▼▼ 変更点 ▼▼▼
-  initializeBGMManager(bgmList = []) {
-  // ▲▲▲ 変更点 ▲▲▲
-    window.BGMManager = (function() {
-      // const bgmList = [ ... ]; // この行は削除
+    // 再生が終了したら次の曲へ進むイベントリスナーを設定
+    this.playerTarget.addEventListener('ended', this.next.bind(this))
 
-      let currentTrack = 0;
-      let isPlaying = false;
-      let audioPlayer = null;
-      let toggleButton = null;
-      let nextButton = null;
-      let isInitialized = false;
-
-      function initialize() {
-        if (isInitialized) return;
-
-        audioPlayer = document.getElementById('bgm-player');
-        toggleButton = document.getElementById('bgm-toggle');
-        nextButton = document.getElementById('bgm-next');
-
-        if (!audioPlayer || !toggleButton || !nextButton) {
-          return;
-        }
-
-        // 読み込むべきBGMがない場合は何もしない
-        if (bgmList.length === 0) {
-          console.warn("BGM files are not provided.");
-          return;
-        }
-
-        const savedVolume = localStorage.getItem('bgmVolume') || '0.3';
-        const savedMuted = localStorage.getItem('bgmMuted') === 'true';
-        const savedTrack = parseInt(localStorage.getItem('bgmCurrentTrack')) || 0;
-        const wasPlaying = localStorage.getItem('bgmWasPlaying') === 'true';
-
-        audioPlayer.volume = parseFloat(savedVolume);
-        audioPlayer.muted = savedMuted;
-        currentTrack = savedTrack;
-
-        setupEventListeners();
-        loadTrack(currentTrack);
-
-        if (wasPlaying && !savedMuted) {
-          setTimeout(() => startPlayback(), 500);
-        }
-
-        updateToggleButton();
-        isInitialized = true;
-        window.BGMManager.isInitialized = true;
-      }
-
-      function setupEventListeners() {
-        audioPlayer.addEventListener('ended', () => nextTrack());
-        audioPlayer.addEventListener('error', (e) => {
-          console.error('Audio error:', e);
-        });
-
-        toggleButton.addEventListener('click', () => {
-          if (isPlaying && !audioPlayer.muted) {
-            audioPlayer.muted = true;
-            localStorage.setItem('bgmMuted', 'true');
-          } else if (isPlaying && audioPlayer.muted) {
-            audioPlayer.muted = false;
-            localStorage.setItem('bgmMuted', 'false');
-          } else {
-            startPlayback();
-          }
-          updateToggleButton();
-        });
-
-        nextButton.addEventListener('click', () => nextTrack());
-
-        audioPlayer.addEventListener('volumechange', () => {
-          localStorage.setItem('bgmVolume', audioPlayer.volume.toString());
-        });
-
-        audioPlayer.addEventListener('play', () => {
-          isPlaying = true;
-          localStorage.setItem('bgmWasPlaying', 'true');
-          updateToggleButton();
-        });
-
-        audioPlayer.addEventListener('pause', () => {
-          isPlaying = false;
-          localStorage.setItem('bgmWasPlaying', 'false');
-          updateToggleButton();
-        });
-      }
-
-      function loadTrack(index) {
-        if (bgmList.length === 0) return;
-        currentTrack = index % bgmList.length;
-        audioPlayer.src = bgmList[currentTrack];
-        localStorage.setItem('bgmCurrentTrack', currentTrack.toString());
-      }
-
-      function startPlayback() {
-        if (!audioPlayer || !audioPlayer.src) return;
-        audioPlayer.muted = false;
-        audioPlayer.play().catch(error => {
-          console.error('Playback failed:', error);
-          isPlaying = false;
-        });
-      }
-
-      function nextTrack() {
-        const wasPlayingBeforeNext = isPlaying && !audioPlayer.muted;
-        currentTrack = (currentTrack + 1) % bgmList.length;
-        loadTrack(currentTrack);
-        if (wasPlayingBeforeNext) {
-          audioPlayer.play().catch(console.error);
-        }
-      }
-
-      function updateToggleButton() {
-        if (!toggleButton) return;
-        if (audioPlayer.muted || !isPlaying) {
-          toggleButton.textContent = '🔇 BGM';
-        } else {
-          toggleButton.textContent = '🔊 BGM';
-        }
-      }
-      
-      window.addEventListener('beforeunload', () => {
-        if (audioPlayer && !audioPlayer.paused) {
-          localStorage.setItem('bgmWasPlaying', 'true');
-        }
-      });
-      
-      document.addEventListener('click', function() {
-        const wasPlaying = localStorage.getItem('bgmWasPlaying') === 'true';
-        const muted = localStorage.getItem('bgmMuted') === 'true';
-        if (wasPlaying && !muted && audioPlayer && audioPlayer.paused) {
-          audioPlayer.play().catch(console.error);
-        }
-      }, { once: true });
-
-      return { initialize };
-    })();
-
-    window.BGMManager.initialize();
+    // 自動再生を開始
+    this.startPlayback()
   }
 
   disconnect() {
+    // コントローラーがDOMから切り離されたら再生を停止し、イベントリスナーを削除
+    this.playerTarget.pause()
+    this.playerTarget.removeEventListener('ended', this.next.bind(this))
+  }
+
+  // 再生/停止の切り替え
+  toggle() {
+    if (this.isPlaying) {
+      this.playerTarget.pause()
+    } else {
+      // 停止していた場合は、現在の曲を再生
+      this.playCurrentTrack()
+    }
+    this.isPlaying = !this.isPlaying
+    this.updateToggleButton()
+  }
+
+  // 次の曲へ
+  next() {
+    // インデックスを次に進め、リストの最後に到達したら最初に戻る
+    this.currentIndex = (this.currentIndex + 1) % this.filesValue.length
+    this.playCurrentTrack()
+  }
+
+  // 自動再生の開始処理
+  startPlayback() {
+    // ユーザー操作を待たずに再生しようとするとブラウザにブロックされる可能性があるため、
+    // エラーをcatchする
+    this.playCurrentTrack().then(() => {
+      this.isPlaying = true
+      this.updateToggleButton()
+    }).catch(error => {
+      // 再生がブロックされた場合、isPlayingはfalseのままなので、
+      // ユーザーが再生ボタンをクリックするまで待機状態になる
+      console.warn("BGMの自動再生がブラウザによってブロックされました。")
+      this.isPlaying = false
+      this.updateToggleButton()
+    })
+  }
+  
+  // 現在のインデックスの曲を再生する
+  playCurrentTrack() {
+    this.playerTarget.src = this.filesValue[this.currentIndex]
+    return this.playerTarget.play() // play()はPromiseを返す
+  }
+
+  // 再生ボタンの表示を更新
+  updateToggleButton() {
+    if (this.isPlaying) {
+      this.toggleButtonTarget.textContent = '🔊 BGM'
+    } else {
+      this.toggleButtonTarget.textContent = '🔇 BGM'
+    }
   }
 }

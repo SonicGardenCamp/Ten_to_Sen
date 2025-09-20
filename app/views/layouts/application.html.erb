@@ -11,57 +11,46 @@
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
   <body>
-    <%# ホーム画面でのみBGMコントローラーを有効にし、正しいアセットパスを渡す %>
-    <% if controller_name == "rooms" && action_name == "index" %>
-      <div
-        data-controller="bgm"
-        data-bgm-files-value="<%= [asset_path('bgm1.mp3'), asset_path('bgm2.mp3'), asset_path('bgm3.mp3')].to_json %>"
-        class="d-none"
-      ></div>
-    <% end %>
-
     <div class="titlecontainer">
       <div class="titlemenubox">
         <% if controller_name == "rooms" %>
-          <% if action_name == "index" %>
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-              <div style="display: flex; gap: 10px; align-items: center;">
-                <button id="bgm-toggle" class="logout-btn">🔊 BGM</button>
-                <button id="bgm-next" class="logout-btn">⏭️</button>
-              </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;" 
+               <% if action_name == "index" %>
+                 data-controller="bgm"
+                 data-bgm-files-value="<%= [asset_path('bgm1.mp3'), asset_path('bgm2.mp3'), asset_path('bgm3.mp3')].to_json %>"
+               <% end %>>
 
-              <div class="greeting">
-                 <% if current_user %>
-                  こんにちは、<%= current_user.username %> さん
-                  <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "logout-btn" %>
-                <% else %>
-                  ゲストでアクセス中です
-                 <% end %>
-              </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <% if action_name == "index" %>
+                <button data-action="click->bgm#toggle" data-bgm-target="toggleButton" class="logout-btn">🔊 BGM</button>
+                <button data-action="click->bgm#next" class="logout-btn">⏭️</button>
+              <% end %>
             </div>
-          <% else %>
+
             <div class="greeting">
-              <% if current_user %>
-                 こんにちは、<%= current_user.username %> さん
+               <% if current_user %>
+                こんにちは、<%= current_user.username %> さん
                 <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "logout-btn" %>
               <% else %>
                 ゲストでアクセス中です
-              <% end %>
+               <% end %>
             </div>
-          <% end %>
+
+            <%# ▼▼▼ 変更点：audioタグをコントローラーの管理下に移動 ▼▼▼ %>
+            <% if action_name == "index" %>
+              <audio data-bgm-target="player" preload="auto" style="display: none;"></audio>
+            <% end %>
+            <%# ▲▲▲ 変更点 ▲▲▲ %>
+          </div>
         <% end %>
       </div>
     </div>
@@ -70,10 +59,11 @@
         <h1 class="titletext_sub"> WORD CHASER </h1>
     </div>
 
-    <% if controller_name == "rooms" && action_name == "index" %>
-      <audio id="bgm-player" preload="auto" style="display: none;">
-      </audio>
-    <% end %>
+    <%# ▼▼▼ 変更点：コントローラー内に移動したため、このブロックは削除 ▼▼▼ %>
+    <%# if controller_name == "rooms" && action_name == "index" %>
+      <%# <audio data-bgm-target="player" preload="auto" style="display: none;"></audio> %>
+    <%# end %>
+    <%# ▲▲▲ 変更点 ▲▲▲ %>
 
     <%= yield %>
   </body>
@@ -81,7 +71,7 @@
 
 <% if controller_name == "rooms" && action_name == "index" %>
 <style>
-/* レスポンシブ対応 */
+/* レスポンス対応 */
 @media (max-width: 768px) {
   /* モバイルでは縦並びに */
   .titlecontainer .titlemenubox > div:first-child {
