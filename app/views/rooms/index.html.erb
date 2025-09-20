@@ -72,18 +72,19 @@
   <h2 class="joinpossible-text">参加可能なルーム</h2>
 
   <% if @rooms.any? %>
-    <ul class="list-group">
+    <%# ▼▼▼ 変更点 ▼▼▼ %>
+    <ul class="list-group" data-controller="lobby">
+    <%# ▲▲▲ 変更点 ▲▲▲ %>
       <% @rooms.each do |room| %>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            ルーム #<%= room.id %>（作成者: <%= room.creator.username %>）
-            / 参加人数: <%= room.room_participants.count %> / <%= room.max_players %>
-          </div>
-          <%= button_to "参加", join_room_path(room), method: :post, class: "game-btn", data: { turbo: false } %>
-        </li>
+        <%# roomの部分テンプレートを呼び出すように変更 %>
+        <%= render 'room', room: room %>
       <% end %>
     </ul>
   <% else %>
+    <%# ▼▼▼ 変更点 ▼▼▼ %>
+    <%# 部屋がない場合も、lobbyコントローラーが接続できるようにulタグを用意しておく %>
+    <ul class="list-group" data-controller="lobby"></ul>
     <p class="joinpossible-subtext">参加可能なルームはありません。</p>
+    <%# ▲▲▲ 変更点 ▲▲▲ %>
   <% end %>
 </div>

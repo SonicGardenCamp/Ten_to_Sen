@@ -4,8 +4,17 @@
 
 import { application } from "./application"
 
+import BgmController from "./bgm_controller"
+application.register("bgm", BgmController)
+
+import LobbyController from "./lobby_controller"
+application.register("lobby", LobbyController)
+
 import RemovalsController from "./removals_controller"
 application.register("removals", RemovalsController)
 
 import ShiritoriController from "./shiritori_controller"
 application.register("shiritori", ShiritoriController)
+
+import WaitingRoomController from "./waiting_room_controller"
+application.register("waiting-room", WaitingRoomController)

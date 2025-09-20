@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  # Action Cableサーバーをマウントする
+  mount ActionCable.server => '/cable'
+
   devise_for :users
 
   # 認証済みユーザーのルートパス
