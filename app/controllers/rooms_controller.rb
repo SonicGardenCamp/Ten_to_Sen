@@ -1,3 +1,5 @@
+# app/controllers/rooms_controller.rb
+
 class RoomsController < ApplicationController
   before_action :set_room, only: %i[show result status]
   before_action :set_words, only: %i[show result]
@@ -156,33 +158,18 @@ class RoomsController < ApplicationController
   def result
     @room.update!(status: :finished) unless @room.finished?
 
-    @all_words_evaluated = @room.words.where.not(score: 0).all? { |word| word.ai_score.present? && word.chain_bonus_score.present? }
-
-    unless @all_words_evaluated
-      @room.words.where.not(score: 0).each do |word|
-        ShiritoriEvaluationJob.perform_later(word)
-        ShiritoriChainEvaluationJob.perform_later(word, word.previous_word) if word.previous_word
+    # ▼▼▼ 変更箇所 ▼▼▼
+    # AI評価が完了していない単語に対して、バックグラウンドジョブを起動する
+    # この時、待機処理は行わない
+    words_to_evaluate = @room.words.where.not(score: 0)
+    words_to_evaluate.each do |word|
+      # 評価がまだ完了していないジョブのみを起動する
+      ShiritoriEvaluationJob.perform_later(word) if word.ai_score.nil?
+      if word.previous_word && word.chain_bonus_score.nil?
+        ShiritoriChainEvaluationJob.perform_later(word, word.previous_word)
       end
     end
-
-    @evaluation_timed_out = false
-
-    if !@all_words_evaluated
-      timeout = 60.seconds
-      start_time = Time.current
-      loop do
-        @all_words_evaluated = @room.words.where.not(score: 0).all? { |word| word.ai_score.present? && word.chain_bonus_score.present? }
-        break if @all_words_evaluated
-
-        if Time.current - start_time > timeout
-          @evaluation_timed_out = true
-          break
-        end
-
-        sleep 1
-        @room.words.reload
-      end
-    end
+    # ▲▲▲ 変更箇所 ▲▲▲
 
     @participants = @room.room_participants.includes(:user)
 
@@ -195,6 +182,7 @@ class RoomsController < ApplicationController
 
       {
         user: participant.user,
+        guest_name: participant.guest_name, # ゲストユーザー名も取得
         result: {
           total_score: total_base_score + total_ai_score + total_chain_bonus_score,
           total_base_score: total_base_score,
@@ -206,11 +194,18 @@ class RoomsController < ApplicationController
       }
     end
 
-    @ranked_results = results.sort_by { |r| r[:result][:total_score] }.reverse.map.with_index(1) do |result, i|
-      result.merge(rank: i, is_current_user: (result[:user] == current_user))
+    @ranked_results = results.sort_by { |r| -r[:result][:total_score] }.map.with_index(1) do |result, i|
+      # ▼▼▼ 変更箇所(改善) ▼▼▼
+      # ゲストユーザーかログインユーザーかを判定して is_current_user を設定
+      is_current = if guest_user?
+        result[:guest_name] == current_guest_name
+      else
+        result[:user] == current_user
+      end
+      result.merge(rank: i, is_current_user: is_current)
+      # ▲▲▲ 変更箇所(改善) ▲▲▲
     end
-
-    @winner = @ranked_results.first[:user] if @ranked_results.present?
+    # @winner はビュー側で動的に決定するため、ここでの設定は不要
   end
 
   # 全ユーザーのソロスコアランキング

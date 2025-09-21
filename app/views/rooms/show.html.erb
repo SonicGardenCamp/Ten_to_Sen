@@ -1,3 +1,5 @@
+<%# app/views/rooms/show.html.erb %>
+
 <div
   class="container py-5"
   data-controller="shiritori"
@@ -48,7 +50,10 @@
     <%# ここに警告メッセージが表示されます %>
   </div>
 
-    <%= render "rooms/word_form", room: @room %>
+    <%# ▼▼▼ ここを修正 ▼▼▼ %>
+    <%# フォームに current_participant を渡す %>
+    <%= render "rooms/word_form", room: @room, current_participant: @current_participant %>
+    <%# ▲▲▲ ここを修正 ▲▲▲ %>
   </div>
 
 </div>
