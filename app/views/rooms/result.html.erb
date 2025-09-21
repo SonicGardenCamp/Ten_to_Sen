@@ -4,16 +4,27 @@
   class="container py-5 text-center"
   data-controller="result"
   data-result-room-id-value="<%= @room.id %>"
+  data-result-current-user-id-value="<%= current_user&.id %>"
+  data-result-current-guest-id-value="<%= guest_user? ? current_guest_id : '' %>"
+  <%# ▼▼▼ ここから追加 ▼▼▼ %>
+  <%# コントローラーで準備した初回表示用のJSONデータをここに埋め込みます %>
+  data-result-initial-value="<%= @initial_results_data %>"
+  <%# ▲▲▲ ここまで追加 ▲▲▲ %>
 >
   <h1 class="mb-4">ゲーム結果</h1>
 
-  <%# ▼▼▼ 変更箇所 ▼▼▼ %>
-  <%# この "resultsWrapper" target の中身がAction Cableによってリアルタイムで更新される %>
   <div data-result-target="resultsWrapper">
-    <%# ランキング表示部分をパーシャル（部分テンプレート）に分離して呼び出す %>
-    <%= render 'rooms/results', ranked_results: @ranked_results %>
+    <div id="initial-loading-message" class="alert alert-info mb-4">
+      AI判定中...
+      <div class="spinner-border spinner-border-sm ms-2" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    
+    <div class="ranking-container" data-result-target="rankingContainer">
+      <%# JavaScriptが、まず上記の初期データを読み込んでここに初回表示を行います %>
+    </div>
   </div>
-  <%# ▲▲▲ 変更箇所 ▲▲▲ %>
 
   <div class="mt-4">
     <%= button_to "トップに戻る", authenticated_root_path, method: :get, class: 'game-btn' %>

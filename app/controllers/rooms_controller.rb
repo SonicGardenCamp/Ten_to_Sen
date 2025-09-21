@@ -3,7 +3,7 @@
 class RoomsController < ApplicationController
   before_action :set_room, only: %i[show result status]
   before_action :set_words, only: %i[show result]
-  skip_before_action :verify_authenticity_token, only: [:join]
+  protect_from_forgery except: :join
 
   # ソロモードルーム作成
   def solo
@@ -158,54 +158,56 @@ class RoomsController < ApplicationController
   def result
     @room.update!(status: :finished) unless @room.finished?
 
-    # ▼▼▼ 変更箇所 ▼▼▼
-    # AI評価が完了していない単語に対して、バックグラウンドジョブを起動する
-    # この時、待機処理は行わない
     words_to_evaluate = @room.words.where.not(score: 0)
     words_to_evaluate.each do |word|
-      # 評価がまだ完了していないジョブのみを起動する
       ShiritoriEvaluationJob.perform_later(word) if word.ai_score.nil?
       if word.previous_word && word.chain_bonus_score.nil?
         ShiritoriChainEvaluationJob.perform_later(word, word.previous_word)
       end
     end
-    # ▲▲▲ 変更箇所 ▲▲▲
 
-    @participants = @room.room_participants.includes(:user)
+    # ▼▼▼ ここから変更 ▼▼▼
+    # ページ初回読み込み時にJavaScriptへ渡すための初期データを生成する
+    @participants = @room.room_participants.includes(:user, :words)
 
-    results = @participants.map do |participant|
-      words = @room.words.where(room_participant_id: participant.id)
-
+    ranked_results_for_view = @participants.map do |participant|
+      words = participant.words.order(created_at: :asc)
       total_base_score = words.pluck(:score).compact.sum
       total_ai_score = words.pluck(:ai_score).compact.sum
       total_chain_bonus_score = words.pluck(:chain_bonus_score).compact.sum
-
       {
-        user: participant.user,
-        guest_name: participant.guest_name, # ゲストユーザー名も取得
-        result: {
-          total_score: total_base_score + total_ai_score + total_chain_bonus_score,
-          total_base_score: total_base_score,
-          total_ai_score: total_ai_score,
-          total_chain_bonus_score: total_chain_bonus_score,
-          word_count: words.count,
-          words: words.order(created_at: :asc)
-        }
+        participant_id: participant.id,
+        user_id: participant.user&.id,
+        guest_id: participant.guest_id,
+        username: participant.user&.username || participant.guest_name,
+        total_score: total_base_score + total_ai_score + total_chain_bonus_score,
+        total_base_score: total_base_score,
+        total_ai_score: total_ai_score,
+        total_chain_bonus_score: total_chain_bonus_score,
+        word_count: words.count,
+        # 単語履歴もここで渡すようにする
+        words: words.map do |w|
+          {
+            body: w.body,
+            score: w.score,
+            ai_score: w.ai_score,
+            ai_evaluation_comment: w.ai_evaluation_comment,
+            chain_bonus_score: w.chain_bonus_score,
+            chain_bonus_comment: w.chain_bonus_comment
+          }
+        end
       }
-    end
+    end.sort_by { |r| -r[:total_score] }
+    
+    all_words_evaluated_for_view = @participants.flat_map { |p| p.words.where.not(score: 0) }.all? { |w| w.ai_score.present? && w.chain_bonus_score.present? }
 
-    @ranked_results = results.sort_by { |r| -r[:result][:total_score] }.map.with_index(1) do |result, i|
-      # ▼▼▼ 変更箇所(改善) ▼▼▼
-      # ゲストユーザーかログインユーザーかを判定して is_current_user を設定
-      is_current = if guest_user?
-        result[:guest_name] == current_guest_name
-      else
-        result[:user] == current_user
-      end
-      result.merge(rank: i, is_current_user: is_current)
-      # ▲▲▲ 変更箇所(改善) ▲▲▲
-    end
-    # @winner はビュー側で動的に決定するため、ここでの設定は不要
+    # JavaScriptで扱いやすいように、最終的なデータをハッシュとしてまとめ、JSON文字列に変換する
+    @initial_results_data = {
+      event: 'initial_load', # 初回読み込みであることを示す
+      all_words_evaluated: all_words_evaluated_for_view,
+      ranked_results: ranked_results_for_view
+    }.to_json
+    # ▲▲▲ ここまで変更 ▲▲▲
   end
 
   # 全ユーザーのソロスコアランキング
