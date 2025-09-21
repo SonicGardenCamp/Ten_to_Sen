@@ -5,9 +5,7 @@
   data-shiritori-started-at-value="<%= @room.started_at&.iso8601 %>"
   data-shiritori-current-user-id-value="<%= current_user&.id %>"
   data-shiritori-current-guest-id-value="<%= guest_user? ? current_guest_id : '' %>"
-  <%# ▼▼▼ 変更点：この一行を追加してください ▼▼▼ %>
   data-shiritori-current-participant-id-value="<%= @words.first&.room_participant_id %>"
-  <%# ▲▲▲ 変更点 ▲▲▲ %>
 >
   <div id="countdown-area" class="text-center py-5 fs-1 fw-bold">3</div>
   <div id="game-area" style="display:none;">

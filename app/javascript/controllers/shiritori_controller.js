@@ -15,8 +15,6 @@ export default class extends Controller {
 
   connect() {
     this.setupCountdown()
-    this.boundHandleGameOver = this.handleGameOver.bind(this);
-    document.addEventListener('game:over', this.boundHandleGameOver);
 
     this.subscription = consumer.subscriptions.create(
       { channel: "RoomChannel", room_id: this.roomIdValue },
@@ -28,7 +26,6 @@ export default class extends Controller {
 
   disconnect() {
     clearInterval(this.timerInterval)
-    document.removeEventListener('game:over', this.boundHandleGameOver)
     this.subscription.unsubscribe()
   }
 
@@ -160,9 +157,6 @@ export default class extends Controller {
 
   inputTargetConnected() {
     wanakana.bind(this.inputTarget)
-  }
-
-  handleGameOver(event) {
   }
 
   startTimer() {

@@ -22,13 +22,6 @@ class WordsController < ApplicationController
         user: room_participant.user
       )
 
-      # ▼▼▼ 修正点 ▼▼▼
-      # AI評価のジョブはゲーム終了時にまとめて実行するため、ここでは削除
-      # ShiritoriEvaluationJob.perform_later(@word_record)
-      # previous_word = room.words.where.not(id: @word_record.id).order(created_at: :desc).first
-      # ShiritoriChainEvaluationJob.perform_later(@word_record, previous_word) if previous_word
-      # ▲▲▲ 修正点 ▲▲▲
-
       word_html = render_to_string(partial: 'words/word', formats: [:html], locals: { word: @word_record })
       RoomChannel.broadcast_to(room, {
         event: 'word_created',
@@ -47,13 +40,6 @@ class WordsController < ApplicationController
         user: room_participant.user
       )
 
-      # ▼▼▼ 修正点 ▼▼▼
-      # AI評価のジョブはゲーム終了時にまとめて実行するため、ここでは削除
-      # ShiritoriEvaluationJob.perform_later(word_record)
-      # previous_word = room.words.where.not(id: word_record.id).order(created_at: :desc).first
-      # ShiritoriChainEvaluationJob.perform_later(word_record, previous_word) if previous_word
-      # ▲▲▲ 修正点 ▲▲▲
-
       word_html = render_to_string(partial: 'words/word', formats: [:html], locals: { word: word_record })
       RoomChannel.broadcast_to(room, {
         event: 'word_created',
@@ -68,8 +54,8 @@ class WordsController < ApplicationController
         message: result[:message]
       })
 
-      all_over = room.room_participants.all? do |p|
-        last_word = p.words.order(:created_at).last
+      all_over = room.room_participants.includes(:words).all? do |p|
+        last_word = p.words.max_by(&:created_at)
         last_word && last_word.body.ends_with?('ん')
       end
 
