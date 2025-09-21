@@ -1,3 +1,5 @@
+# app/controllers/words_controller.rb
+
 class WordsController < ApplicationController
   def create
     room = Room.find(word_params[:room_id])
@@ -66,13 +68,26 @@ class WordsController < ApplicationController
       head :no_content
       
     else # validation error
+      # ▼▼▼ ここから変更 ▼▼▼
+      # フォームを再描画するために、現在の参加者情報を取得する
+      @current_participant = if guest_user?
+        room.room_participants.find_by(guest_id: current_guest_id)
+      else
+        room.room_participants.find_by(user_id: current_user.id)
+      end
+
       render turbo_stream: [
         turbo_stream.update('flash-messages',
           partial: 'layouts/flash',
           locals: { message: result[:message], type: 'warning' }
         ),
-        turbo_stream.replace('word_form', partial: 'rooms/word_form', locals: { room: room }),
+        # locals に @current_participant を追加してパーシャルに渡す
+        turbo_stream.replace('word_form', 
+          partial: 'rooms/word_form', 
+          locals: { room: room, current_participant: @current_participant }
+        ),
       ], status: :unprocessable_entity
+      # ▲▲▲ ここまで変更 ▲▲▲
     end
   end
 
