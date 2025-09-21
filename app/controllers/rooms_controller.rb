@@ -247,12 +247,12 @@ class RoomsController < ApplicationController
       return unless @room
 
       if guest_user?
-        participant = @room.room_participants.find_by(guest_id: current_guest_id)
+        @current_participant = @room.room_participants.find_by(guest_id: current_guest_id)
       else
-        participant = @room.room_participants.find_by(user_id: current_user.id)
+        @current_participant = @room.room_participants.find_by(user_id: current_user.id)
       end
 
-      @words = @room.words.where(room_participant_id: participant&.id).order(:created_at) || []
+      @words = @room.words.where(room_participant_id: @current_participant&.id).order(:created_at) || []
     end
 
     def room_params

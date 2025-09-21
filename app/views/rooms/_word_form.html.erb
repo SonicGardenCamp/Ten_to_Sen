@@ -1,12 +1,13 @@
+<%# app/views/rooms/_word_form.html.erb %>
+
 <%= form_with model: Word.new, url: words_path, id: 'word_form', data: {
   shiritori_target: 'form',
   action: 'submit->shiritori#submitWord'
 } do |f| %>
   <%= f.hidden_field :room_id, value: room.id %>
   
-  <%# ▼▼▼ 変更点：ゲストユーザーとログインユーザーの両方に対応する ▼▼▼ %>
-  <%= f.hidden_field :room_participant_id, value: room.room_participants.find_by(guest_user? ? { guest_id: current_guest_id } : { user: current_user })&.id %>
-  <%# ▲▲▲ 変更点 ▲▲▲ %>
+  <%# コントローラーで設定したインスタンス変数を参照する %>
+  <%= f.hidden_field :room_participant_id, value: @current_participant&.id %>
   
   <div class="input-group">
     <div id="flash-messages">

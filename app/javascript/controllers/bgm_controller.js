@@ -10,8 +10,10 @@ export default class extends Controller {
     this.isPlaying = false
     this.currentIndex = 0
 
-    // 再生が終了したら次の曲へ進むイベントリスナーを設定
-    this.playerTarget.addEventListener('ended', this.next.bind(this))
+    // bindした関数をプロパティに保存
+    this.boundNext = this.next.bind(this)
+    // 保存した関数をリスナーとして登録
+    this.playerTarget.addEventListener('ended', this.boundNext)
 
     // 自動再生を開始
     this.startPlayback()
@@ -20,7 +22,8 @@ export default class extends Controller {
   disconnect() {
     // コントローラーがDOMから切り離されたら再生を停止し、イベントリスナーを削除
     this.playerTarget.pause()
-    this.playerTarget.removeEventListener('ended', this.next.bind(this))
+    // 登録時と同じ関数オブジェクトを使ってリスナーを削除
+    this.playerTarget.removeEventListener('ended', this.boundNext)
   }
 
   // 再生/停止の切り替え

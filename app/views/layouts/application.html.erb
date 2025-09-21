@@ -23,7 +23,7 @@
     <div class="titlecontainer">
       <div class="titlemenubox">
         <% if controller_name == "rooms" %>
-          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;" 
+          <div class="header-menu-container"
                <% if action_name == "index" %>
                  data-controller="bgm"
                  data-bgm-files-value="<%= [asset_path('bgm1.mp3'), asset_path('bgm2.mp3'), asset_path('bgm3.mp3')].to_json %>"
@@ -45,11 +45,9 @@
                <% end %>
             </div>
 
-            <%# ▼▼▼ 変更点：audioタグをコントローラーの管理下に移動 ▼▼▼ %>
             <% if action_name == "index" %>
               <audio data-bgm-target="player" preload="auto" style="display: none;"></audio>
             <% end %>
-            <%# ▲▲▲ 変更点 ▲▲▲ %>
           </div>
         <% end %>
       </div>
@@ -59,22 +57,16 @@
         <h1 class="titletext_sub"> WORD CHASER </h1>
     </div>
 
-    <%# ▼▼▼ 変更点：コントローラー内に移動したため、このブロックは削除 ▼▼▼ %>
-    <%# if controller_name == "rooms" && action_name == "index" %>
-      <%# <audio data-bgm-target="player" preload="auto" style="display: none;"></audio> %>
-    <%# end %>
-    <%# ▲▲▲ 変更点 ▲▲▲ %>
-
     <%= yield %>
   </body>
 </html>
 
 <% if controller_name == "rooms" && action_name == "index" %>
 <style>
-/* レスポンス対応 */
+/* レスポンシブ対応 */
 @media (max-width: 768px) {
   /* モバイルでは縦並びに */
-  .titlecontainer .titlemenubox > div:first-child {
+  .header-menu-container {
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
