@@ -159,25 +159,50 @@ class RoomsController < ApplicationController
     @room.update!(status: :finished) unless @room.finished?
 
     words_to_evaluate = @room.words.where.not(score: 0)
-    words_to_evaluate.each do |word|
-      ShiritoriEvaluationJob.perform_later(word) if word.ai_score.nil?
-      if word.previous_word && word.chain_bonus_score.nil?
-        ShiritoriChainEvaluationJob.perform_later(word, word.previous_word)
+    # 評価ジョブのキックは初回のみ（AIスコアがnilの単語がある場合のみ）
+    if words_to_evaluate.any? { |w| w.ai_score.nil? || (w.previous_word && w.chain_bonus_score.nil?) }
+      words_to_evaluate.each do |word|
+        ShiritoriEvaluationJob.perform_later(word) if word.ai_score.nil?
+        if word.previous_word && word.chain_bonus_score.nil?
+          ShiritoriChainEvaluationJob.perform_later(word, word.previous_word)
+        end
       end
     end
 
-    # ▼▼▼ ここから変更 ▼▼▼
-    # サービスを呼び出して初回表示用のデータを取得する
     service = ResultBroadcasterService.new(@room)
+    # 常に最新のデータを取得する
     results_data = service.build_results_data
 
-    # JavaScriptで扱いやすいように、最終的なデータをハッシュとしてまとめ、JSON文字列に変換する
+    # もし、すでに全ての評価が終わっている場合 (リロード時など)
+    if results_data[:all_words_evaluated]
+      # 何も加工せず、そのまま最終結果を渡す
+      initial_data_for_view = results_data
+    else
+      # まだ評価中の場合は、アニメーション演出のために基礎点のみのデータに加工する
+      initial_data_for_view = {
+        all_words_evaluated: false,
+        ranked_results: results_data[:ranked_results].map do |r|
+          {
+            participant_id: r[:participant_id],
+            user_id: r[:user_id],
+            guest_id: r[:guest_id],
+            username: r[:username],
+            total_score: r[:total_base_score], # 総合点は基礎点と同じ
+            total_base_score: r[:total_base_score],
+            total_ai_score: nil, # ボーナスは隠す
+            total_chain_bonus_score: nil,
+            word_count: r[:word_count],
+            words: [] # 単語履歴も隠す
+          }
+        end.sort_by { |r| -r[:total_score] } # 基礎点でソートし直す
+      }
+    end
+
     @initial_results_data = {
-      event: 'initial_load', # 初回読み込みであることを示す
-      all_words_evaluated: results_data[:all_words_evaluated],
-      ranked_results: results_data[:ranked_results]
+      event: 'initial_load',
+      all_words_evaluated: initial_data_for_view[:all_words_evaluated],
+      ranked_results: initial_data_for_view[:ranked_results]
     }.to_json
-    # ▲▲▲ ここまで変更 ▲▲▲
   end
 
   # 全ユーザーのソロスコアランキング
