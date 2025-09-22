@@ -1,5 +1,3 @@
-# app/controllers/rooms_controller.rb
-
 class RoomsController < ApplicationController
   before_action :set_room, only: %i[show result status]
   before_action :set_words, only: %i[show result]
@@ -159,49 +157,34 @@ class RoomsController < ApplicationController
     @room.update!(status: :finished) unless @room.finished?
 
     words_to_evaluate = @room.words.where.not(score: 0)
-    words_to_evaluate.each do |word|
-      ShiritoriEvaluationJob.perform_later(word) if word.ai_score.nil?
-      if word.previous_word && word.chain_bonus_score.nil?
-        ShiritoriChainEvaluationJob.perform_later(word, word.previous_word)
+    if words_to_evaluate.any? { |w| w.ai_score.nil? || (w.previous_word && w.chain_bonus_score.nil?) }
+      words_to_evaluate.each do |word|
+        ShiritoriEvaluationJob.perform_later(word) if word.ai_score.nil?
+        if word.previous_word && word.chain_bonus_score.nil?
+          ShiritoriChainEvaluationJob.perform_later(word, word.previous_word)
+        end
       end
     end
 
-    # ▼▼▼ ここから変更 ▼▼▼
-    # サービスを呼び出して初回表示用のデータを取得する
     service = ResultBroadcasterService.new(@room)
     results_data = service.build_results_data
 
-    # JavaScriptで扱いやすいように、最終的なデータをハッシュとしてまとめ、JSON文字列に変換する
+    # ▼▼▼ ここからリファクタリング ▼▼▼
+    # もし、すでに全ての評価が終わっている場合 (リロード時など)
+    if results_data[:all_words_evaluated]
+      # 何も加工せず、そのまま最終結果を渡す
+      initial_data_for_view = results_data
+    else
+      # まだ評価中の場合は、サービスが提供するメソッドで初期データを取得する
+      initial_data_for_view = service.build_initial_results_data
+    end
+
     @initial_results_data = {
-      event: 'initial_load', # 初回読み込みであることを示す
-      all_words_evaluated: results_data[:all_words_evaluated],
-      ranked_results: results_data[:ranked_results]
+      event: 'initial_load',
+      all_words_evaluated: initial_data_for_view[:all_words_evaluated],
+      ranked_results: initial_data_for_view[:ranked_results]
     }.to_json
-    # ▲▲▲ ここまで変更 ▲▲▲
-  end
-
-  # 全ユーザーのソロスコアランキング
-  def solo_ranking
-    @ranking = User.joins(:words)
-      .select('users.*, SUM(words.score) AS total_score')
-      .group('users.id')
-      .order('total_score DESC')
-  end
-
-  # 全ユーザーのソロスコアランキング（JSON返却）
-  def solo_ranking_json
-    ranking = Word.joins(:user)
-      .group('users.id', 'users.username')
-      .select('users.id, users.username, SUM(words.score) AS total_score')
-      .order('total_score DESC')
-
-    render json: ranking.map.with_index(1) { |row, i|
-      {
-        rank: i,
-        username: row.username,
-        total_score: row.total_score
-      }
-    }
+    # ▲▲▲ ここまでリファクタリング ▲▲▲
   end
 
   private

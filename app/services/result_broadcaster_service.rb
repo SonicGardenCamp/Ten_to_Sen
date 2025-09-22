@@ -13,6 +13,39 @@ class ResultBroadcasterService
     ResultChannel.broadcast_to(@room, results_data)
   end
 
+  # ▼▼▼ ここから追加 ▼▼▼
+  # Phase 1: 初期表示用のデータを構築するメソッド
+  def build_initial_results_data
+    participants = @room.room_participants.includes(:user, :words)
+
+    # 基礎点のみでソートした暫定ランキングを作成
+    ranked_results = participants.map do |participant|
+      words = participant.words
+      total_base_score = words.map(&:score).compact.sum
+
+      {
+        participant_id: participant.id,
+        user_id: participant.user&.id,
+        guest_id: participant.guest_id,
+        username: participant.user&.username || participant.guest_name,
+        # 初期表示では総合スコアを基礎点と同じにしておく
+        total_score: total_base_score,
+        total_base_score: total_base_score,
+        # AIと連鎖ボーナスはまだ計算されていないので nil とする
+        total_ai_score: nil,
+        total_chain_bonus_score: nil,
+        word_count: words.size,
+        words: [] # 初期表示では単語履歴は不要なため空にする
+      }
+    end.sort_by { |r| -r[:total_score] }
+
+    {
+      # all_words_evaluated は必ず false になる
+      all_words_evaluated: false,
+      ranked_results: ranked_results
+    }
+  end
+  # ▲▲▲ ここまで追加 ▲▲▲
 
   def build_results_data
     participants = @room.room_participants.includes(:user, :words)
