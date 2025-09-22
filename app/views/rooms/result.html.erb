@@ -6,10 +6,10 @@
   data-result-room-id-value="<%= @room.id %>"
   data-result-current-user-id-value="<%= current_user&.id %>"
   data-result-current-guest-id-value="<%= guest_user? ? current_guest_id : '' %>"
-  <%# ▼▼▼ ここから追加 ▼▼▼ %>
-  <%# コントローラーで準備した初回表示用のJSONデータをここに埋め込みます %>
-  data-result-initial-value="<%= @initial_results_data %>"
-  <%# ▲▲▲ ここまで追加 ▲▲▲ %>
+  <%# ▼▼▼ レビュー指摘箇所を修正 ▼▼▼ %>
+  <%# h()ヘルパーでエスケープ処理を追加して、安全にJSONデータを埋め込む %>
+  data-result-initial-value="<%= h(@initial_results_data) %>"
+  <%# ▲▲▲ レビュー指摘箇所を修正 ▲▲▲ %>
 >
   <h1 class="mb-4">ゲーム結果</h1>
 

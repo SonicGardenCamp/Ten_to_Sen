@@ -1,29 +1,30 @@
 import { Controller } from "@hotwired/stimulus"
 import consumer from "../channels/consumer"
-import * as bootstrap from "bootstrap" // BootstrapのJavaScriptをインポート
+import * as bootstrap from "bootstrap"
+
+const escapeHtml = (unsafe) => {
+  if (!unsafe) return '' // nullやundefinedの場合は空文字を返す
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 export default class extends Controller {
   static values = {
     roomId: Number,
     currentUserId: Number,
     currentGuestId: String,
-    // ▼▼▼ ここから追加 ▼▼▼
-    // HTMLに埋め込まれた初回表示用のJSONデータを受け取る
     initial: String,
-    // ▲▲▲ ここまで追加 ▲▲▲
   }
   static targets = ["resultsWrapper", "rankingContainer"]
 
   connect() {
-    // ▼▼▼ ここから変更 ▼▼▼
-    // Step 1: 初回表示処理
-    // ページ読み込み時にHTMLに埋め込まれた初期データをパース（解釈）する
     const initialData = JSON.parse(this.initialValue)
-    // パースしたデータを使って、最初のランキング画面を描画する
     this.updateRanking(initialData.ranked_results, initialData.all_words_evaluated)
-    // ▲▲▲ ここまで変更 ▲▲▲
 
-    // Step 2: リアルタイム更新の待受開始
     this.subscription = consumer.subscriptions.create(
       { channel: "ResultChannel", room_id: this.roomIdValue },
       {
@@ -51,17 +52,20 @@ export default class extends Controller {
       this.rankingContainerTarget.appendChild(cardElement)
     })
     
-    // Bootstrap の Accordion を初期化
     const accordions = this.rankingContainerTarget.querySelectorAll('.accordion-button')
-    accordions.forEach(button => new bootstrap.Collapse(button.parentElement.nextElementSibling, { toggle: false }))
-
+    accordions.forEach(button => {
+      const targetSelector = button.dataset.bsTarget
+      const collapseTarget = document.querySelector(targetSelector)
+      if (collapseTarget) {
+        new bootstrap.Collapse(collapseTarget, { toggle: false })
+      }
+    })
 
     if (allWordsEvaluated) {
       this.finalizeResults(rankedResults)
     }
   }
 
-  // createRankingCardメソッドを単語履歴表示に対応させる
   createRankingCard(cardId, data, rank) {
     const cardWrapper = document.createElement('div')
     cardWrapper.id = cardId
@@ -71,22 +75,22 @@ export default class extends Controller {
     const aiScore = data.total_ai_score ?? '???'
     const chainBonusScore = data.total_chain_bonus_score ?? '???'
 
-    // ▼▼▼ ここから変更 ▼▼▼
-    // 単語履歴のHTMLを生成する
+    // ▼▼▼ レビュー指摘箇所を修正 ▼▼▼
+    // 全ての動的コンテンツを escapeHtml ヘルパーで囲む
     const wordsHistoryHtml = data.words.map(word => `
       <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
         <div class="flex-grow-1 text-start">
-          <p class="fs-6 mb-0 fw-medium">${word.body}</p>
+          <p class="fs-6 mb-0 fw-medium">${escapeHtml(word.body)}</p>
           ${word.ai_evaluation_comment ? `
             <div class="text-muted small mt-1 p-2 bg-light rounded">
               <i class="bi bi-robot me-1"></i>
-              ${word.ai_evaluation_comment}
+              ${escapeHtml(word.ai_evaluation_comment)}
             </div>
           ` : ''}
           ${word.chain_bonus_comment ? `
             <div class="text-muted small mt-1 p-2 bg-success bg-opacity-10 rounded">
               <i class="bi bi-link-45deg me-1"></i>
-              ${word.chain_bonus_comment}
+              ${escapeHtml(word.chain_bonus_comment)}
             </div>
           ` : ''}
         </div>
@@ -100,14 +104,13 @@ export default class extends Controller {
       </div>
     `).join('')
 
-    // カード全体のHTMLに単語履歴のアコーディオンを追加
     cardWrapper.innerHTML = `
       <div class="col-md-8">
         <div class="card ${isCurrentUser ? 'border-primary' : ''}">
           <div class="card-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
               <span class="rank-badge fs-5 me-3">${rank}位</span>
-              <h4 class="mb-0">${data.username} ${isCurrentUser ? '(あなた)' : ''}</h4>
+              <h4 class="mb-0">${escapeHtml(data.username)} ${isCurrentUser ? '(あなた)' : ''}</h4>
             </div>
             <span class="crown fs-2 d-none">👑</span>
           </div>
@@ -150,7 +153,7 @@ export default class extends Controller {
         </div>
       </div>
     `
-    // ▲▲▲ ここまで変更 ▲▲▲
+    // ▲▲▲ レビュー指摘箇所を修正 ▲▲▲
     return cardWrapper
   }
 

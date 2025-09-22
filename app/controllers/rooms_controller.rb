@@ -167,45 +167,15 @@ class RoomsController < ApplicationController
     end
 
     # ▼▼▼ ここから変更 ▼▼▼
-    # ページ初回読み込み時にJavaScriptへ渡すための初期データを生成する
-    @participants = @room.room_participants.includes(:user, :words)
-
-    ranked_results_for_view = @participants.map do |participant|
-      words = participant.words.order(created_at: :asc)
-      total_base_score = words.pluck(:score).compact.sum
-      total_ai_score = words.pluck(:ai_score).compact.sum
-      total_chain_bonus_score = words.pluck(:chain_bonus_score).compact.sum
-      {
-        participant_id: participant.id,
-        user_id: participant.user&.id,
-        guest_id: participant.guest_id,
-        username: participant.user&.username || participant.guest_name,
-        total_score: total_base_score + total_ai_score + total_chain_bonus_score,
-        total_base_score: total_base_score,
-        total_ai_score: total_ai_score,
-        total_chain_bonus_score: total_chain_bonus_score,
-        word_count: words.count,
-        # 単語履歴もここで渡すようにする
-        words: words.map do |w|
-          {
-            body: w.body,
-            score: w.score,
-            ai_score: w.ai_score,
-            ai_evaluation_comment: w.ai_evaluation_comment,
-            chain_bonus_score: w.chain_bonus_score,
-            chain_bonus_comment: w.chain_bonus_comment
-          }
-        end
-      }
-    end.sort_by { |r| -r[:total_score] }
-    
-    all_words_evaluated_for_view = @participants.flat_map { |p| p.words.where.not(score: 0) }.all? { |w| w.ai_score.present? && w.chain_bonus_score.present? }
+    # サービスを呼び出して初回表示用のデータを取得する
+    service = ResultBroadcasterService.new(@room)
+    results_data = service.build_results_data
 
     # JavaScriptで扱いやすいように、最終的なデータをハッシュとしてまとめ、JSON文字列に変換する
     @initial_results_data = {
       event: 'initial_load', # 初回読み込みであることを示す
-      all_words_evaluated: all_words_evaluated_for_view,
-      ranked_results: ranked_results_for_view
+      all_words_evaluated: results_data[:all_words_evaluated],
+      ranked_results: results_data[:ranked_results]
     }.to_json
     # ▲▲▲ ここまで変更 ▲▲▲
   end
