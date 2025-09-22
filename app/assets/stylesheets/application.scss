@@ -205,13 +205,11 @@ body{
   right: 0;
 }
 
-/* Phase 1: 初期表示でカードを隠しておくためのクラス */
 .result-card-wrapper.initial-hidden {
   opacity: 0;
   transform: translateY(30px);
 }
 
-/* Phase 2: スポットライト演出用のクラス */
 .ranking-container.is-animating .result-card-wrapper:not(.spotlight) {
   opacity: 0.5;
   transform: scale(0.98);
@@ -221,7 +219,6 @@ body{
   z-index: 10; /* 他のカードより手前に表示 */
 }
 
-/* Phase 3: 勝者確定演出用のクラス */
 .result-card-wrapper.winner .card {
   border: 2px solid #ffd700 !important;
   box-shadow: 0 0 20px 8px rgba(255, 215, 0, 0.7) !important;
@@ -273,3 +270,52 @@ body{
   border-radius: 16px; /* テーブルの角丸に合わせる */
 }
 /* ▲▲▲ ランキングスクロール用のスタイル ▲▲▲ */
+
+/* ▼▼▼ ロビー画面の見出し用スタイル ▼▼▼ */
+.lobby-heading {
+  color: #00ffe7;
+  text-shadow: 0 0 8px #00ffe7, 0 0 2px #fff;
+}
+/* ▲▲▲ ロビー画面の見出し用スタイル ▲▲▲ */
+
+/* ▼▼▼ ロビーのランキングテーブル用スタイル ▼▼▼ */
+.futuristic-ranking {
+  background: #181818;
+  color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px #00ffe7a0, 0 1px 4px #000a;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  border: none;
+  width: 100%;
+}
+.futuristic-ranking th {
+  background: linear-gradient(90deg,#23234a 0%,#181818 100%);
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  text-shadow: 0 0 2px #00ffe7,0 0 1px #fff;
+  padding: 12px;
+}
+.futuristic-ranking td {
+  border: none;
+  padding: 12px;
+  font-size: 1.1em;
+  background: #222;
+  color: #fff;
+  transition: background 0.2s;
+}
+.futuristic-ranking tr {
+  border-bottom: 1px solid #222;
+}
+.futuristic-ranking tr:hover {
+  background: #23234a;
+  color: #fff;
+}
+.futuristic-ranking tbody tr:first-child {
+  background: linear-gradient(90deg,#00ffe7 0%,#23234a 100%);
+  color: #fff;
+  font-weight: bold;
+  text-shadow: 0 0 3px #fff,0 0 1px #00ffe7;
+}
+/* ▲▲▲ ロビーのランキングテーブル用スタイル ▲▲▲ */
