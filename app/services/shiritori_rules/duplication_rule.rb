@@ -6,7 +6,7 @@ module ShiritoriRules
     def validate
       # もし単語が既に使用されていたら、エラーメッセージを返す
       if @words.pluck(:body).include?(@new_word)
-        return { status: :error, message: 'その単語は既に使用されています。' }
+        { status: :error, message: 'その単語は既に使用されています。' }
       end
       # 問題なければ何も返さない
     end

@@ -15,9 +15,9 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :rooms do
+  resources :rooms, only: %i[index show new edit create update destroy] do
     collection do
-      post :solo       # ソロモード作成
+      post :solo # ソロモード作成
       get :solo_ranking # ソロスコアランキング
       get :solo_ranking_json # ソロスコアランキングAPI（画面遷移なし用）
     end
@@ -33,5 +33,5 @@ Rails.application.routes.draw do
   resources :words, only: [:create]
 
   # デプロイ時に必須（消さないでね）
-  get "up" => 'rails/health#show'
+  get 'up' => 'rails/health#show'
 end

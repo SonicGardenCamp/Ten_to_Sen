@@ -191,8 +191,6 @@ body{
   width: 100%;
 }
 
-/* ▼▼▼ 結果発表アニメーション用のスタイル ▼▼▼ */
-
 .ranking-container {
   position: relative; /* カードの位置を計算する基準点となる */
 }
@@ -224,9 +222,6 @@ body{
   box-shadow: 0 0 20px 8px rgba(255, 215, 0, 0.7) !important;
 }
 
-/* ▲▲▲ 結果発表アニメーション用のスタイル ▲▲▲ */
-
-/* ▼▼▼ 結果表示のスコアを見やすくするスタイル ▼▼▼ */
 
 .score-breakdown {
   padding: 1rem 0;
@@ -261,24 +256,18 @@ body{
     }
   }
 }
-/* ▲▲▲ スコア表示用のスタイル ▲▲▲ */
 
-/* ▼▼▼ ロビーのランキングをスクロール可能にするスタイル ▼▼▼ */
 .ranking-table-container {
   max-height: 280px; /* 5位まで表示されるくらいの高さ */
   overflow-y: auto;  /* 高さを超えたらスクロール */
   border-radius: 16px; /* テーブルの角丸に合わせる */
 }
-/* ▲▲▲ ランキングスクロール用のスタイル ▲▲▲ */
 
-/* ▼▼▼ ロビー画面の見出し用スタイル ▼▼▼ */
 .lobby-heading {
   color: #00ffe7;
   text-shadow: 0 0 8px #00ffe7, 0 0 2px #fff;
 }
-/* ▲▲▲ ロビー画面の見出し用スタイル ▲▲▲ */
 
-/* ▼▼▼ ロビーのランキングテーブル用スタイル ▼▼▼ */
 .futuristic-ranking {
   background: #181818;
   color: #fff;
@@ -318,4 +307,3 @@ body{
   font-weight: bold;
   text-shadow: 0 0 3px #fff,0 0 1px #00ffe7;
 }
-/* ▲▲▲ ロビーのランキングテーブル用スタイル ▲▲▲ */

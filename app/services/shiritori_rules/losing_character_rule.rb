@@ -6,7 +6,7 @@ module ShiritoriRules
     def validate
       # もし「ん」で終わっていたら、ゲームオーバー用の特別なステータスを返す
       if @new_word.ends_with?('ん')
-        return { status: :game_over, message: '「ん」で終わる単語です！' }
+        { status: :game_over, message: '「ん」で終わる単語です！' }
       end
       # 問題なければ何も返さない
     end

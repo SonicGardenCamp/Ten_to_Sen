@@ -15,9 +15,10 @@ module ApplicationCable
     end
 
     private
-      def find_verified_user
-        # ログインしていない場合は nil を返す
-        env['warden'].user
-      end
+
+    def find_verified_user
+      # ログインしていない場合は nil を返す
+      env['warden'].user
+    end
   end
 end

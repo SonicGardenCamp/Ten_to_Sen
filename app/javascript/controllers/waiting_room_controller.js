@@ -5,9 +5,7 @@ export default class extends Controller {
   static values = { roomId: Number }
 
   connect() {
-    // ▼▼▼ 変更点：新しいconsumerを作成する代わりに、共有のconsumerを使用する ▼▼▼
     this.subscription = consumer.subscriptions.create(
-      // ▲▲▲ 変更点 ▲▲▲
       { channel: "RoomChannel", room_id: this.roomIdValue },
       {
         received: (data) => {

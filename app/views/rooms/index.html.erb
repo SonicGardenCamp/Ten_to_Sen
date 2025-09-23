@@ -37,21 +37,22 @@
   <div>
     <h2 class="mb-3 text-center lobby-heading">参加可能なルーム</h2>
 
-    <ul class="list-group" data-controller="lobby">
-      <% if @rooms.any? %>
-        <% @rooms.each do |room| %>
-          <%= render 'room', room: room %>
+    <div data-controller="lobby">
+      <ul class="list-group" data-lobby-target="list">
+        <% if @rooms.any? %>
+          <% @rooms.each do |room| %>
+            <%= render 'room', room: room %>
+          <% end %>
         <% end %>
+      </ul>
+      
+      <%# メッセージ部分にも target を設定 %>
+      <% if @rooms.empty? %>
+        <p id="no-rooms-message" class="text-center mt-3" data-lobby-target="message">参加可能なルームはありません。</p>
+      <% else %>
+        <p id="no-rooms-message" class="text-center mt-3 d-none" data-lobby-target="message">参加可能なルームはありません。</p>
       <% end %>
-    </ul>
-    
-    <% if @rooms.empty? %>
-      <p id="no-rooms-message" class="text-center mt-3">参加可能なルームはありません。</p>
-    <% else %>
-      <p id="no-rooms-message" class="text-center mt-3 d-none">参加可能なルームはありません。</p>
-    <% end %>
+    </div>
   </div>
 
 </div>
-
-<%# ▼▼▼ 変更点: ここのstyleブロックを全て削除しました ▼▼▼ %>
