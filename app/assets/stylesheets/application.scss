@@ -76,7 +76,7 @@ body{
     left: 50%;
     top: 30px;
     backdrop-filter: blur(1px);
-    
+
     transform: translate(-50%);
     text-align: center;    /* テキスト中央寄せ */
 }
@@ -89,7 +89,7 @@ body{
     color: cyan;
     left: 50%;
     backdrop-filter: blur(1px);
-    
+
     transform: translate(-50%);
     text-align: center;    /* テキスト中央寄せ */
     clip-path: polygon(1% 1%, 99% 1%, 89% 98%, 11% 98%);
@@ -225,19 +225,19 @@ body{
 
 .score-breakdown {
   padding: 1rem 0;
-  
+
   .score-item {
     // 総合スコア
     &.total-score h3 {
       color: #00eaff !important; // ネオンブルーを強調
       text-shadow: 0 0 8px #00eaff, 0 0 12px #00eaff;
     }
-    
+
     // 基礎点
     &.base-score h5 {
       color: #f8f9fa !important; // 白に近い色で見やすく
     }
-    
+
     // AIボーナス
     &.ai-score h5 {
       color: #0dcaf0 !important; // Bootstrapのinfoカラーに合わせる
@@ -247,7 +247,7 @@ body{
     &.chain-score h5 {
       color: #198754 !important; // Bootstrapのsuccessカラーに合わせる
     }
-    
+
     // 「総合スコア」などのラベルテキスト
     small {
       font-size: 0.9rem; // 文字を少し大きく
@@ -306,4 +306,84 @@ body{
   color: #fff;
   font-weight: bold;
   text-shadow: 0 0 3px #fff,0 0 1px #00ffe7;
+}
+
+// 追加
+.user-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 16px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #00ffe7;
+  border-radius: 12px;
+  box-shadow: 0 0 12px #00ffe7a0;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.user-panel .username {
+  font-size: 18px;
+  text-shadow: 0 0 6px #00ffe7, 0 0 2px #fff;
+}
+
+.user-panel .guest {
+  color: #aaa;
+  text-shadow: none;
+}
+
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff6b6b, #f06595);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+}
+
+.music-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* 共通スタイル */
+.music-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  color: white;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.music-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+/* 再生/停止ボタンは緑 */
+.play-btn {
+  background: linear-gradient(135deg, #38d9a9, #12b886);
+}
+
+/* 次の曲ボタンは青 */
+.next-btn {
+  background: linear-gradient(135deg, #4dabf7, #1c7ed6);
 }

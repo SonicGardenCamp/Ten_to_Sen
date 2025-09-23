@@ -29,20 +29,28 @@
                  data-bgm-files-value="<%= [asset_path('bgm1.mp3'), asset_path('bgm2.mp3'), asset_path('bgm3.mp3')].to_json %>"
                <% end %>>
 
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="music-controls">
               <% if action_name == "index" %>
-                <button data-action="click->bgm#toggle" data-bgm-target="toggleButton" class="logout-btn">🔊 BGM</button>
-                <button data-action="click->bgm#next" class="logout-btn">⏭️</button>
+                <button data-action="click->bgm#toggle" data-bgm-target="toggleButton" class="music-btn play-btn">
+                  🔊 BGM 再生/停止
+                </button>
+                <button data-action="click->bgm#next" class="music-btn next-btn">
+                  ⏭️ 次の曲
+                </button>
               <% end %>
             </div>
 
-            <div class="greeting">
-               <% if current_user %>
-                こんにちは、<%= current_user.username %> さん
-                <%= button_to "ログアウト", destroy_user_session_path, method: :delete, class: "logout-btn" %>
+            <div class="user-panel">
+              <% if current_user %>
+                <span class="username neon-blue">
+                  👾 <%= current_user.username %>
+                </span>
+                <%= button_to destroy_user_session_path, method: :delete, class: "logout-btn" do %>
+                  <i class="fas fa-sign-out-alt"></i>ログアウト
+                <% end %>
               <% else %>
-                ゲストでアクセス中です
-               <% end %>
+                <span class="username guest">GUEST</span>
+              <% end %>
             </div>
 
             <% if action_name == "index" %>
