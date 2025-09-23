@@ -31,11 +31,35 @@
 
             <div class="music-controls">
               <% if action_name == "index" %>
-                <button data-action="click->bgm#toggle" data-bgm-target="toggleButton" class="music-btn play-btn">
-                  🔊 BGM 再生/停止
+                <button class="music-btn" onclick="toggleImage()">
+                  <img id="music-icon"
+                    src="<%= asset_path('audiobtn_on.png') %>"
+                    alt="BGM"
+                    style="width:32px;height:32px;">
                 </button>
-                <button data-action="click->bgm#next" class="music-btn next-btn">
-                  ⏭️ 次の曲
+
+                <script>
+                  // Railsヘルパーを使って、JavaScript変数に正しいアセットパスを格納
+                  const onImagePath = "<%= asset_path('audiobtn_on.png') %>";
+                  const offImagePath = "<%= asset_path('audiobtn_off.png') %>";
+                  
+                  function toggleImage() {
+                    const imgElement = document.getElementById('music-icon');
+                    
+                    // 現在の画像のsrcと正しいパスを比較して切り替える
+                    if (imgElement.src.includes(onImagePath)) {
+                      imgElement.src = offImagePath;
+                    } else {
+                      imgElement.src = onImagePath;
+                    }
+                  }
+                </script>
+
+                <button data-action="click->bgm#next" class="music-btn">
+                  <img 
+                    src="<%= asset_path('change.png') %>" 
+                    alt="次の曲" 
+                    style="width:32px;height:32px;">
                 </button>
               <% end %>
             </div>
