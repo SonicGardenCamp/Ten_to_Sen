@@ -17,6 +17,7 @@ gem 'turbo-rails'
 gem 'solid_cable'
 gem 'solid_cache'
 gem 'solid_queue'
+gem 'redis'
 
 gem 'bootsnap', require: false
 gem 'kamal', require: false
@@ -27,7 +28,6 @@ gem 'tzinfo-data', platforms: %i[windows jruby]
 
 gem 'devise'
 gem 'gemini_craft'
-gem 'redis'
 
 group :development, :test do
   gem 'brakeman', require: false
