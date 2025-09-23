@@ -369,7 +369,8 @@ body{
   font-size: 15px;
   font-weight: bold;
   cursor: pointer;
-  color: white;
+  color: rgb(0, 0, 0);
+  background-color: #0d0f0f;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -380,10 +381,10 @@ body{
 
 /* 再生/停止ボタンは緑 */
 .play-btn {
-  background: linear-gradient(135deg, #38d9a9, #12b886);
+  //background: linear-gradient(135deg, #38d9a9, #12b886);
 }
 
 /* 次の曲ボタンは青 */
 .next-btn {
-  background: linear-gradient(135deg, #4dabf7, #1c7ed6);
+  //background: linear-gradient(135deg, #4dabf7, #1c7ed6);
 }
