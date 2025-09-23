@@ -2,35 +2,49 @@ import { Controller } from "@hotwired/stimulus"
 import consumer from "../channels/consumer"
 
 export default class extends Controller {
+  static targets = ["list", "message"]
+
   connect() {
+    // ページ読み込み時にも一度チェックを実行
+    this.updateMessageVisibility()
 
-    console.log("Lobby Controller: CONNECTED at", new Date().toLocaleTimeString());
-    // ▼▼▼ 変更点：新しいconsumerを作成する代わりに、共有のconsumerを使用する ▼▼▼
     this.subscription = consumer.subscriptions.create("LobbyChannel", {
-      // ▲▲▲ 変更点 ▲▲▲
-
-      // サーバーからデータを受信したときに呼び出される
       received: (data) => {
-        // 'room_created' イベントを受信した場合
         if (data.event === 'room_created') {
-          // 部屋リストの先頭に新しい部屋のHTMLを追加
-          this.element.insertAdjacentHTML('afterbegin', data.room_html)
+          // ▼▼▼ ここを修正 ▼▼▼
+          // this.element を this.listTarget に変更
+          this.listTarget.insertAdjacentHTML('afterbegin', data.room_html)
+          // ▲▲▲ ここまで修正 ▲▲▲
         }
-        // 'room_removed' イベントを受信した場合
         if (data.event === 'room_removed') {
-          // 該当するIDの部屋要素を探して削除
           const roomElement = document.getElementById(`room_${data.room_id}`)
           if (roomElement) {
             roomElement.remove()
           }
         }
+        
+        // ▼▼▼ ここから追加 ▼▼▼
+        // ルームが追加/削除された後に必ずチェックを実行
+        this.updateMessageVisibility()
       }
     })
   }
 
   disconnect() {
-    console.log("Lobby Controller: DISCONNECTED at", new Date().toLocaleTimeString());
-    // ページを離れるときにサブスクリプションを解除
     this.subscription.unsubscribe()
+  }
+
+  // メッセージの表示/非表示を更新するメソッド
+  updateMessageVisibility() {
+    // listTarget（<ul>）の中にルーム（.list-group-item）が1つ以上あるか？
+    const hasRooms = this.listTarget.querySelector(".list-group-item") !== null
+
+    if (hasRooms) {
+      // ルームがあればメッセージを隠す
+      this.messageTarget.classList.add("d-none")
+    } else {
+      // ルームがなければメッセージを表示する
+      this.messageTarget.classList.remove("d-none")
+    }
   }
 }

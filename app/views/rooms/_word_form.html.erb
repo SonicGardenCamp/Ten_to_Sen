@@ -6,10 +6,8 @@
 } do |f| %>
   <%= f.hidden_field :room_id, value: room.id %>
   
-  <%# ▼▼▼ ここを変更 ▼▼▼ %>
   <%# インスタンス変数(@)からローカル変数(current_participant)に変更 %>
   <%= f.hidden_field :room_participant_id, value: current_participant&.id %>
-  <%# ▲▲▲ ここを変更 ▲▲▲ %>
   
   <div class="input-group">
     <div id="flash-messages">

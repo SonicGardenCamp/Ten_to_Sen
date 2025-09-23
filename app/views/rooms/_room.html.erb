@@ -3,8 +3,6 @@
     ルーム #<%= room.id %>（作成者: <%= room.creator.username %>）
     / 参加人数: <%= room.room_participants.count %> / <%= room.max_players %>
   </div>
-  <%# ▼▼▼ 修正点 ▼▼▼ %>
   <%# Turboがフォームの送信を横取りしないように、formにdata-turbo="false"を指定する %>
   <%= button_to "参加", join_room_path(room), method: :post, class: "game-btn", form: { "data-turbo": "false" } %>
-  <%# ▲▲▲ 修正点 ▲▲▲ %>
 </li>

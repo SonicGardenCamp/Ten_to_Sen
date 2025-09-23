@@ -254,7 +254,6 @@ export default class extends Controller {
       '<div class="text-muted p-3">最終結果発表までお待ちください...</div>' : 
       this.createWordsHistoryHtml(data.words);
 
-    // ▼▼▼ ここから変更 ▼▼▼
     cardWrapper.innerHTML = `
       <div class="col-md-8">
         <div class="card ${isCurrentUser ? 'border-primary' : ''}">
@@ -304,7 +303,6 @@ export default class extends Controller {
         </div>
       </div>
     `;
-    // ▲▲▲ ここまで変更 ▲▲▲
 
     const button = cardWrapper.querySelector('.accordion-button');
     const collapseTarget = cardWrapper.querySelector('.accordion-collapse');

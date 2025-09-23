@@ -14,7 +14,7 @@ class ShiritoriLogic
     ShiritoriRules::WordLengthRule,
     ShiritoriRules::ConnectionRule,
     ShiritoriRules::DuplicationRule,
-    ShiritoriRules::LosingCharacterRule
+    ShiritoriRules::LosingCharacterRule,
   ].freeze
 
   def initialize(room, room_participant)
@@ -26,7 +26,7 @@ class ShiritoriLogic
   def validate(new_word)
     RULES.each do |rule_class|
       rule = rule_class.new(new_word, @words)
-      
+
       if (result = rule.validate)
         return result
       end

@@ -8,7 +8,7 @@ module ShiritoriRules
     def validate
       # もし、ひらがなと長音符以外が含まれていたらエラーメッセージを返す
       unless @new_word.match?(HIRAGANA_ONLY_REGEX)
-        return { status: :error, message: 'ひらがなで入力してください。' }
+        { status: :error, message: 'ひらがなで入力してください。' }
       end
       # 問題なければ何も返さない
     end

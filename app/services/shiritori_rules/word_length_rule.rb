@@ -8,14 +8,15 @@ module ShiritoriRules
 
     def validate
       # もし文字数が指定の範囲外なら、エラーメッセージを返す
-      unless @new_word.length.between?(MIN_LENGTH, MAX_LENGTH)
-        message = if @new_word.length < MIN_LENGTH
-                    "#{MIN_LENGTH}文字以上の単語を入力してください。"
-                  else
-                    "単語は#{MAX_LENGTH}文字以内で入力してください。"
-                  end
-        return { status: :error, message: message }
-      end
+      return if @new_word.length.between?(MIN_LENGTH, MAX_LENGTH)
+
+      message = if @new_word.length < MIN_LENGTH
+                  "#{MIN_LENGTH}文字以上の単語を入力してください。"
+                else
+                  "単語は#{MAX_LENGTH}文字以内で入力してください。"
+                end
+      { status: :error, message: message }
+
       # 問題なければ何も返さない
     end
   end

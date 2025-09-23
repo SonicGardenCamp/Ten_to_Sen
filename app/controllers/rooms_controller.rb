@@ -6,21 +6,21 @@ class RoomsController < ApplicationController
   # ソロモードルーム作成
   def solo
     @room = Room.create!(
-      name: "ソロモード",
+      name: 'ソロモード',
       status: :playing,
       max_players: 1,
       creator_id: current_user&.id,
-      game_mode: "score_attack",
+      game_mode: 'score_attack',
       started_at: Time.current + 4.seconds
     )
     participant = if guest_user?
-      @room.room_participants.create!(
-        guest_id: current_guest_id,
-        guest_name: current_guest_name
-      )
-    else
-      @room.room_participants.create!(user: current_user)
-    end
+                    @room.room_participants.create!(
+                      guest_id: current_guest_id,
+                      guest_name: current_guest_name
+                    )
+                  else
+                    @room.room_participants.create!(user: current_user)
+                  end
     @room.words.create!(
       body: 'しりとり',
       score: 0,
@@ -28,10 +28,6 @@ class RoomsController < ApplicationController
       user: participant.user
     )
     redirect_to room_path(@room), notice: 'ソロモードを開始しました'
-  end
-
-  def new
-    @room = Room.new
   end
 
   def index
@@ -44,12 +40,39 @@ class RoomsController < ApplicationController
         total_score = words.sum(:score).to_i + words.sum(:ai_score).to_i + words.sum(:chain_bonus_score).to_i
         user = participant.user
         next unless user
+
         if user_max_scores[user.id].nil? || user_max_scores[user.id][:score] < total_score
           user_max_scores[user.id] = { username: user.username, score: total_score }
         end
       end
     end
     @ranking = user_max_scores.values.sort_by { |h| -h[:score] }.first(5)
+  end
+
+  def show
+    is_participant = if guest_user?
+                       @room.room_participants.exists?(guest_id: current_guest_id)
+                     else
+                       @room.room_participants.exists?(user_id: current_user.id)
+                     end
+
+    unless is_participant
+      redirect_to rooms_path, alert: 'このルームの参加者ではありません。' and return
+    end
+
+    if @room.finished?
+      redirect_to result_room_path(@room) and return
+    end
+
+    if @room.playing?
+      render :show
+    else
+      render :waiting
+    end
+  end
+
+  def new
+    @room = Room.new
   end
 
   # ルーム作成 → ホストは待機画面へ
@@ -89,10 +112,10 @@ class RoomsController < ApplicationController
       )
 
       RoomChannel.broadcast_to(room, {
-        event: 'participant_joined',
-        participants_html: participants_html,
-        participant_count: room.room_participants.count
-      })
+                                 event: 'participant_joined',
+                                 participants_html: participants_html,
+                                 participant_count: room.room_participants.count,
+                               })
 
       if room.full?
         room.update!(status: :playing, started_at: Time.current + 4.seconds) if room.respond_to?(:status)
@@ -100,8 +123,8 @@ class RoomsController < ApplicationController
         ActionCable.server.broadcast('lobby_channel', { event: 'room_removed', room_id: room.id })
         RoomChannel.broadcast_to(room, { event: 'game_started' })
 
-        room.room_participants.includes(:user).each do |participant|
-          unless room.words.where(user: participant.user).exists?
+        room.room_participants.includes(:user).find_each do |participant|
+          unless room.words.exists?(user: participant.user)
             room.words.create!(body: 'しりとり', score: 0, user: participant.user, room_participant: participant)
           end
         end
@@ -111,33 +134,11 @@ class RoomsController < ApplicationController
     redirect_to room_path(room)
   end
 
-  def show
-    is_participant = if guest_user?
-      @room.room_participants.exists?(guest_id: current_guest_id)
-    else
-      @room.room_participants.exists?(user_id: current_user.id)
-    end
-
-    unless is_participant
-      redirect_to rooms_path, alert: 'このルームの参加者ではありません。' and return
-    end
-
-    if @room.finished?
-      redirect_to result_room_path(@room) and return
-    end
-
-    if @room.playing?
-      render :show
-    else
-      render :waiting
-    end
-  end
-
   def status
     render json: {
       status: @room.status,
       participant_count: @room.room_participants.count,
-      max_players: @room.max_players
+      max_players: @room.max_players,
     }
   end
 
@@ -169,43 +170,40 @@ class RoomsController < ApplicationController
     service = ResultBroadcasterService.new(@room)
     results_data = service.build_results_data
 
-    # ▼▼▼ ここからリファクタリング ▼▼▼
-    # もし、すでに全ての評価が終わっている場合 (リロード時など)
-    if results_data[:all_words_evaluated]
-      # 何も加工せず、そのまま最終結果を渡す
-      initial_data_for_view = results_data
-    else
-      # まだ評価中の場合は、サービスが提供するメソッドで初期データを取得する
-      initial_data_for_view = service.build_initial_results_data
-    end
+    initial_data_for_view = if results_data[:all_words_evaluated]
+                              # 何も加工せず、そのまま最終結果を渡す
+                              results_data
+                            else
+                              # まだ評価中の場合は、サービスが提供するメソッドで初期データを取得する
+                              service.build_initial_results_data
+                            end
 
     @initial_results_data = {
       event: 'initial_load',
       all_words_evaluated: initial_data_for_view[:all_words_evaluated],
-      ranked_results: initial_data_for_view[:ranked_results]
+      ranked_results: initial_data_for_view[:ranked_results],
     }.to_json
-    # ▲▲▲ ここまでリファクタリング ▲▲▲
   end
 
   private
 
-    def set_room
-      @room = Room.find(params[:id])
-    end
+  def set_room
+    @room = Room.find(params[:id])
+  end
 
-    def set_words
-      return unless @room
+  def set_words
+    return unless @room
 
-      if guest_user?
-        @current_participant = @room.room_participants.find_by(guest_id: current_guest_id)
-      else
-        @current_participant = @room.room_participants.find_by(user_id: current_user.id)
-      end
+    @current_participant = if guest_user?
+                             @room.room_participants.find_by(guest_id: current_guest_id)
+                           else
+                             @room.room_participants.find_by(user_id: current_user.id)
+                           end
 
-      @words = @room.words.where(room_participant_id: @current_participant&.id).order(:created_at) || []
-    end
+    @words = @room.words.where(room_participant_id: @current_participant&.id).order(:created_at) || []
+  end
 
-    def room_params
-      params.require(:room).permit(:name, :game_mode)
-    end
+  def room_params
+    params.require(:room).permit(:name, :game_mode)
+  end
 end

@@ -1,4 +1,4 @@
-require_relative "application_cable/channel"
+require_relative 'application_cable/channel'
 
 class RoomChannel < ApplicationCable::Channel
   # "room_channel_#{params[:room_id]}" という名前のチャンネルに接続があった時に呼ばれる

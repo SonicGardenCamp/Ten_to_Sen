@@ -15,10 +15,8 @@ application.register("lobby", LobbyController)
 import RemovalsController from "./removals_controller"
 application.register("removals", RemovalsController)
 
-// ▼▼▼ ここから追加 ▼▼▼
 import ResultController from "./result_controller"
 application.register("result", ResultController)
-// ▲▲▲ ここまで追加 ▲▲▲
 
 import ShiritoriController from "./shiritori_controller"
 application.register("shiritori", ShiritoriController)

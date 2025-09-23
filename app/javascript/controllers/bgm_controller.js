@@ -10,29 +10,64 @@ export default class extends Controller {
     this.isPlaying = false
     this.currentIndex = 0
 
-    // bindした関数をプロパティに保存
     this.boundNext = this.next.bind(this)
-    // 保存した関数をリスナーとして登録
     this.playerTarget.addEventListener('ended', this.boundNext)
 
-    // 自動再生を開始
+    // 自動再生を試みる
     this.startPlayback()
   }
 
   disconnect() {
-    // コントローラーがDOMから切り離されたら再生を停止し、イベントリスナーを削除
     this.playerTarget.pause()
-    // 登録時と同じ関数オブジェクトを使ってリスナーを削除
     this.playerTarget.removeEventListener('ended', this.boundNext)
+    // フォールバック用のリスナーが設定されていたら削除
+    if (this.boundStartOnInteraction) {
+      document.body.removeEventListener('click', this.boundStartOnInteraction)
+    }
+  }
+
+  // 自動再生の開始処理
+  startPlayback() {
+    this.playCurrentTrack().then(() => {
+      // 自動再生に成功した場合
+      this.isPlaying = true
+      this.updateToggleButton()
+    }).catch(error => {
+      // 自動再生がブロックされた場合
+      console.warn("BGMの自動再生がブロックされました。ユーザーの操作を待機します。")
+      this.isPlaying = false
+      this.updateToggleButton()
+      
+      // 【フォールバック処理】
+      // ページ上のどこかが初めてクリックされた時に再生を試みるリスナーを設定
+      this.boundStartOnInteraction = this.startOnInteraction.bind(this)
+      document.body.addEventListener('click', this.boundStartOnInteraction, { once: true })
+    })
+  }
+  
+  // 【フォールバック用のメソッド】
+  // ユーザーの初回インタラクション時に呼ばれる
+  startOnInteraction() {
+    // すでに再生中（例：ユーザーが直接BGMボタンを押した）でなければ再生を開始
+    if (!this.isPlaying) {
+      // toggleメソッドを呼ぶことで、再生状態のフラグ管理などを一元化できる
+      this.toggle()
+    }
   }
 
   // 再生/停止の切り替え
   toggle() {
+    // ユーザーが手動でボタンを操作した場合、フォールバック用のリスナーは不要なので削除
+    if (this.boundStartOnInteraction) {
+      document.body.removeEventListener('click', this.boundStartOnInteraction)
+      this.boundStartOnInteraction = null // 念のためクリア
+    }
+
     if (this.isPlaying) {
       this.playerTarget.pause()
     } else {
-      // 停止していた場合は、現在の曲を再生
-      this.playCurrentTrack()
+      // playCurrentTrackがPromiseを返すので、catchでエラーをハンドル
+      this.playCurrentTrack().catch(e => console.error("BGMの再生に失敗しました", e))
     }
     this.isPlaying = !this.isPlaying
     this.updateToggleButton()
@@ -40,31 +75,22 @@ export default class extends Controller {
 
   // 次の曲へ
   next() {
-    // インデックスを次に進め、リストの最後に到達したら最初に戻る
     this.currentIndex = (this.currentIndex + 1) % this.filesValue.length
-    this.playCurrentTrack()
-  }
-
-  // 自動再生の開始処理
-  startPlayback() {
-    // ユーザー操作を待たずに再生しようとするとブラウザにブロックされる可能性があるため、
-    // エラーをcatchする
-    this.playCurrentTrack().then(() => {
-      this.isPlaying = true
-      this.updateToggleButton()
-    }).catch(error => {
-      // 再生がブロックされた場合、isPlayingはfalseのままなので、
-      // ユーザーが再生ボタンをクリックするまで待機状態になる
-      console.warn("BGMの自動再生がブラウザによってブロックされました。")
-      this.isPlaying = false
-      this.updateToggleButton()
-    })
+    // isPlayingがtrueの場合のみ（＝一度は再生が始まっている場合のみ）次の曲を再生
+    if (this.isPlaying) {
+      this.playCurrentTrack()
+    } else {
+      // まだ一度も再生されていない場合は、次に再生する曲の準備だけしておく
+      this.playerTarget.src = this.filesValue[this.currentIndex]
+    }
   }
   
   // 現在のインデックスの曲を再生する
   playCurrentTrack() {
     this.playerTarget.src = this.filesValue[this.currentIndex]
-    return this.playerTarget.play() // play()はPromiseを返す
+    const promise = this.playerTarget.play()
+    // play()がPromiseを返さない古いブラウザも考慮し、エラーが出ないようにする
+    return promise === undefined ? Promise.resolve() : promise
   }
 
   // 再生ボタンの表示を更新
