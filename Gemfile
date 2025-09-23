@@ -28,6 +28,8 @@ gem 'tzinfo-data', platforms: %i[windows jruby]
 gem 'devise'
 gem 'gemini_craft'
 
+gem 'redis'
+
 group :development, :test do
   gem 'brakeman', require: false
   gem 'debug', platforms: %i[mri windows], require: 'debug/prelude'
